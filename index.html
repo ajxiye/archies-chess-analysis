@@ -12,7 +12,7 @@
         const saved = localStorage.getItem("aca-theme");
         document.documentElement.dataset.theme = saved || "dark";
         const route = location.hash.replace(/^#\/?/, "").split(/[?]/)[0];
-        document.documentElement.dataset.page = ["home", "analysis", "play", "puzzles", "library", "settings"].includes(route) ? route : "analysis";
+        document.documentElement.dataset.page = ["home", "analysis", "play", "puzzles", "library", "settings"].includes(route) ? route : "home";
       } catch (_) {
         document.documentElement.dataset.theme = "dark";
       }
@@ -68,6 +68,111 @@ select,input,textarea{min-height:35px;padding:7px 10px;border:1px solid var(--bo
 :root[data-motion="off"] .aca-piece{transition:none!important}
 :root[data-motion="reduced"] .aca-piece{transition-duration:70ms!important}
 
+
+:root{--font:"Outfit",sans-serif;font-family:"Outfit",sans-serif}
+html,body,button,input,select,textarea,h1,h2,h3,h4,p,a,span,label,strong,small{font-family:"Outfit",sans-serif}
+body{font-size:14px;line-height:1.45;color:#d0d2ce}
+:root{--page:#191b19;--panel:#252825;--panel-2:#202320;--panel-3:#303530;--border:#393f38;--border-strong:#4a5149;--text:#c2c8c0;--strong:#edf0ea;--muted:#9da59a;--accent:#79a64b;--accent-hover:#89b95a;--accent-soft:rgba(121,166,75,.16);--radius:12px}
+:root[data-theme="light"]{--page:#eef0eb;--panel:#fbfcf8;--panel-2:#f2f4ef;--panel-3:#e8ece5;--border:#d8ded5;--border-strong:#c4cec0;--text:#555d52;--strong:#20271e;--muted:#788273;--accent:#638f36;--accent-hover:#547d2d;--accent-soft:rgba(99,143,54,.13)}
+.app{width:min(100% - 40px,1460px);margin:0 auto;padding-bottom:16px}
+.topbar{min-height:58px;gap:18px}.brand{gap:10px}.brand-mark{width:32px;height:32px;border-radius:9px;background:#35402f;border-color:#586d4b}.brand h1{font-size:16px;font-weight:600;letter-spacing:-.02em}.tagline{font-size:11px}
+.page-nav{min-height:47px;padding:5px 0;gap:4px}.page-nav a{padding:7px 11px;border-radius:8px;font-size:13px;font-weight:500}
+.aca-icon{width:16px;height:16px}
+.utility-btn,.theme-toggle,.btn{min-height:38px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500}
+.btn.primary{color:#fff}
+.panel{border-radius:12px}.panel-head{padding:12px 14px}.panel-title h2{font-size:16px;font-weight:600}.panel-body{padding:13px 14px}
+.home-page{width:min(100%,1120px);max-width:1120px;margin:20px auto 0}
+.home-welcome{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;margin-bottom:18px}
+.home-welcome h2{margin:5px 0 5px;font-size:30px;line-height:1.1;letter-spacing:-.035em;color:var(--strong);font-weight:600}
+.home-welcome p{margin:0;color:var(--muted);font-size:14px}
+.home-help{display:grid;gap:3px;max-width:330px;padding:10px 13px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--muted);font-size:12px}
+.home-help-title{color:var(--strong);font-size:12px;font-weight:600}
+.home-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.home-card{position:relative;min-height:166px;padding:16px;border-radius:12px;background:var(--panel);border:1px solid var(--border);transition:border-color .16s,background .16s,transform .16s}
+.home-card:hover{background:var(--panel-2);border-color:var(--border-strong);transform:translateY(-2px)}
+.home-card>.aca-icon{width:24px;height:24px;margin-bottom:12px;color:#a6c78a}
+.home-card-number{font-size:10px;letter-spacing:.08em;color:var(--muted)}
+.home-card h3{margin:7px 0 5px;color:var(--strong);font-size:17px;font-weight:600}
+.home-card p{font-size:12px;line-height:1.5;margin:0 0 12px;color:var(--muted)}
+.home-card-action{margin-top:auto;color:#a9cf88;font-size:12px;font-weight:600}
+.home-lower{display:grid;grid-template-columns:minmax(250px,.85fr) minmax(0,1.4fr);gap:12px;margin-top:14px;align-items:stretch}
+.home-stats{display:grid;grid-template-columns:1fr;gap:7px;margin:0}
+.home-stat{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 13px;border-radius:9px;background:var(--panel);border:1px solid var(--border)}
+.home-stat span{font-size:12px;color:var(--muted)}.home-stat strong{margin:0;font-size:16px;color:var(--strong)}
+.home-recent-panel{min-height:0}.home-recent-panel .panel-head{padding:10px 13px}.home-recent-panel .panel-title h2{font-size:14px}.home-recent-panel .panel-body{padding:8px 12px}.home-recent-panel .saved-game-row{padding:7px 9px}.home-note{margin-top:10px;font-size:11px;color:var(--muted)}
+.settings-page,.library-page{max-width:1100px;margin:20px auto 0}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,370px);gap:14px;max-width:1420px;width:100%;margin:12px auto 0;align-items:stretch}
+.main-column,.side-column{gap:10px;min-height:0}.board-panel{display:flex;flex-direction:column;min-height:0;height:100%}
+.board-top{padding:10px 14px 7px;align-items:center}.board-heading h2{font-size:16px}.turn-indicator{padding:6px 9px;font-size:12px;border-radius:8px}
+.board-guide{padding:0 15px 8px;color:var(--muted);font-size:12px;line-height:1.35}
+.board-wrap{width:min(100%,calc(100dvh - 320px),640px);max-width:640px;margin:0 auto}
+.board-footer{padding:8px 12px 6px;gap:7px}.board-controls{gap:5px}.board-controls .btn{min-height:33px;padding:6px 9px;font-size:11px}.board-status{font-size:11px}
+.shortcut-hint{display:none}.board-tools{padding:8px 11px;gap:6px;border-top:1px solid var(--border)}.board-tools label{font-size:11px}.board-tools .btn{min-height:32px;padding:5px 8px;font-size:11px}.board-tools select{min-height:32px;padding:5px 8px}
+.side-column{min-height:0;overflow:hidden}.engine-panel,.overview-panel,.moves-panel{flex:0 0 auto}.engine-panel .panel-head,.overview-panel .panel-head,.moves-panel .panel-head{padding:10px 12px}.engine-panel .panel-body,.overview-panel .panel-body,.moves-panel .panel-body{padding:10px 12px}
+.engine-topline{gap:8px}.engine-label strong{font-size:13px}.engine-label span{font-size:11px}.depth-control select{font-size:11px}.engine-buttons{margin-top:8px}.engine-buttons .btn{min-height:34px;font-size:12px}
+.engine-progress{margin-top:9px}.engine-status{font-size:10px}.evaluation{margin-top:9px;padding:9px}.score{font-size:22px}.best-move-row{margin-top:8px;font-size:11px}
+.stat-grid{margin-top:8px;gap:7px}.stat-card{padding:8px}.stat-card .value{font-size:17px}.summary-note{margin-top:6px;font-size:10px}.moves-panel{display:flex;flex:1 1 auto;flex-direction:column;min-height:120px}.moves-panel .panel-body{min-height:0;flex:1 1 auto}.move-list{max-height:none;height:100%;overflow:auto}
+.bot-lobby{max-width:1420px;margin:12px auto 0}.bot-grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}.bot-card{padding:9px;gap:4px}.bot-avatar{width:26px;height:26px}.bot-name{font-size:12px}.bot-style{font-size:10px;line-height:1.3}.bot-lobby-bottom{margin-top:9px;align-items:center}.bot-lobby .panel-body{padding:11px 13px}
+.daily-puzzle-panel{border-color:var(--border)}.puzzle-summary{gap:6px}.puzzle-rating{padding:8px}.puzzle-rating strong{font-size:15px}.puzzle-themes{margin:8px 0}.puzzle-message{min-height:40px;padding:9px 10px;font-size:12px}.puzzle-actions{margin-top:9px}
+.import-panel,.review-panel{max-width:1420px;margin:10px auto 0}.import-layout{gap:12px}.import-panel textarea{min-height:105px}.review-panel .panel-body{max-height:32vh;overflow:auto}
+:root[data-page="home"] .workspace,:root[data-page="home"] .bot-lobby,:root[data-page="home"] .import-panel,:root[data-page="home"] .review-panel{display:none!important}
+:root[data-page="library"] .home-page,:root[data-page="library"] .settings-page,:root[data-page="library"] .workspace,:root[data-page="library"] .bot-lobby,:root[data-page="library"] .import-panel,:root[data-page="library"] .review-panel{display:none!important}
+:root[data-page="settings"] .home-page,:root[data-page="settings"] .library-page,:root[data-page="settings"] .workspace,:root[data-page="settings"] .bot-lobby,:root[data-page="settings"] .import-panel,:root[data-page="settings"] .review-panel{display:none!important}
+:root[data-page="analysis"] .home-page,:root[data-page="analysis"] .library-page,:root[data-page="analysis"] .settings-page,:root[data-page="analysis"] .bot-lobby,:root[data-page="analysis"] .daily-puzzle-panel{display:none!important}
+:root[data-page="play"] .home-page,:root[data-page="play"] .library-page,:root[data-page="play"] .settings-page,:root[data-page="play"] .import-panel,:root[data-page="play"] .review-panel,:root[data-page="play"] .engine-panel,:root[data-page="play"] .overview-panel,:root[data-page="play"] .moves-panel{display:none!important}
+:root[data-page="puzzles"] .home-page,:root[data-page="puzzles"] .library-page,:root[data-page="puzzles"] .settings-page,:root[data-page="puzzles"] .import-panel,:root[data-page="puzzles"] .review-panel,:root[data-page="puzzles"] .engine-panel,:root[data-page="puzzles"] .overview-panel,:root[data-page="puzzles"] .moves-panel,:root[data-page="puzzles"] .bot-chat-panel{display:none!important}
+:root[data-page="puzzles"] .daily-puzzle-panel{display:block!important}
+:root[data-page="home"] .home-page,:root[data-page="library"] .library-page,:root[data-page="settings"] .settings-page{display:block}
+.footer{display:none}
+@media(min-width:781px) and (min-height:680px){
+  html,body{height:100%;overflow:hidden}
+  .app{height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+  .home-page,.settings-page,.library-page{flex:1 1 auto;min-height:0;overflow:auto}
+  .workspace{flex:1 1 auto;min-height:0;overflow:hidden}
+  :root[data-page="analysis"] .workspace,:root[data-page="puzzles"] .workspace,:root[data-page="play"] .workspace{height:auto}
+  :root[data-page="analysis"] .board-wrap,:root[data-page="puzzles"] .board-wrap,:root[data-page="play"] .board-wrap{width:min(100%,calc(100dvh - 320px),640px)}
+  :root[data-page="play"] .bot-lobby{flex:0 0 auto}
+  :root[data-page="play"] .workspace{flex:1 1 0}
+}
+@media(max-height:760px) and (min-width:781px){
+  .topbar{min-height:52px}.page-nav{min-height:42px}
+  .board-wrap{width:min(100%,calc(100dvh - 285px),570px)}
+  .workspace{margin-top:8px;gap:10px}
+  .home-page{margin-top:12px}
+  .home-card{min-height:145px;padding:13px}
+  .home-lower{margin-top:9px}.home-stat{padding:7px 10px}
+}
+@media(max-width:780px){
+  html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
+  .app{width:min(100% - 24px,680px);height:auto;min-height:100dvh;display:flex;flex-direction:column;overflow:visible;padding-bottom:20px}
+  .topbar{min-height:60px}.page-nav{position:sticky;top:0;overflow-x:auto;scrollbar-width:none;flex:0 0 auto}.page-nav::-webkit-scrollbar{display:none}
+  .workspace{grid-template-columns:minmax(0,1fr);gap:10px;margin-top:12px}
+  .main-column,.side-column{overflow:visible}.board-panel{height:auto}
+  .board-wrap{width:min(100%,calc(100vw - 40px),560px);max-width:560px}
+  .board-footer{align-items:flex-start}.board-status{width:100%}.board-tools{padding:9px 10px}
+  .home-page{margin:17px auto 0}.home-welcome{display:block}.home-help{margin-top:12px;max-width:none}
+  .home-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.home-card{min-height:155px}
+  .home-lower{grid-template-columns:1fr}.home-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .home-stat{display:block}.home-stat strong{margin-top:3px}
+  .bot-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .bot-lobby-bottom{align-items:stretch;flex-direction:column}
+  .import-layout{grid-template-columns:1fr}.settings-field{grid-template-columns:1fr;gap:6px}
+  .page-heading{align-items:flex-start;flex-direction:column}.page-heading .btn{width:100%}
+}
+@media(max-width:480px){
+  .app{width:min(100% - 16px,460px)}
+  .brand h1{font-size:14px}.tagline{display:none}
+  .topbar-actions{gap:4px}.privacy-pill{display:none}
+  .utility-btn,.theme-toggle{min-height:33px;padding:6px 8px;font-size:11px}
+  .page-nav a{padding:7px 8px;font-size:11px}
+  .home-welcome h2{font-size:26px}.home-cards{grid-template-columns:1fr}.home-card{min-height:130px}
+  .home-stats{gap:5px}.home-stat{padding:8px 7px}.home-stat span{font-size:10px}.home-stat strong{font-size:15px}
+  .board-top{padding:9px 10px 6px}.board-wrap{width:calc(100vw - 28px)}
+  .board-tools .btn{font-size:10px;padding:5px 7px}
+  .board-guide{font-size:11px}
+  .puzzle-actions .btn{flex:1 1 calc(50% - 4px)}
+}
+
 </style>
 </head>
 <body>
@@ -84,60 +189,69 @@ select,input,textarea{min-height:35px;padding:7px 10px;border:1px solid var(--bo
       </div>
     </header>
     <nav class="page-nav" id="page-nav" aria-label="Main navigation">
-      <a href="#/analysis" data-page-link="analysis" data-icon="chart">Analysis</a>
+      <a href="#/home" data-page-link="home" data-icon="house">Home</a>
       <a href="#/play" data-page-link="play" data-icon="swords">Play</a>
+      <a href="#/analysis" data-page-link="analysis" data-icon="chart">Analyse</a>
       <a href="#/puzzles" data-page-link="puzzles" data-icon="puzzle">Puzzles</a>
       <a href="#/library" data-page-link="library" data-icon="library">Library</a>
       <a href="#/settings" id="settings-btn" data-page-link="settings" data-icon="settings">Settings</a>
-      <a href="#/home" data-page-link="home" data-icon="house">Home</a>
     </nav>
     <div class="legacy-mode-controls" aria-hidden="true">
       <button id="mode-review-btn" type="button">Review</button>
       <button id="mode-bots-btn" type="button">Play</button>
     </div>
 
+
     <section class="home-page" id="home-page" aria-labelledby="home-heading">
       <div class="home-welcome">
-        <span class="eyebrow">ARCHIE'S CHESS ANALYSIS</span>
-        <h2 id="home-heading">What would you like to do?</h2>
-        <p>Choose a page to get started. Your games and engine analysis stay in your browser.</p>
+        <div>
+          <span class="eyebrow">WELCOME TO YOUR CHESS WORKSPACE</span>
+          <h2 id="home-heading">What would you like to do?</h2>
+          <p>Choose a starting point. You can come back here whenever you need.</p>
+        </div>
+        <div class="home-help">
+          <span class="home-help-title">New to the board?</span>
+          <span>Click one of your pieces to see its legal moves, then choose a highlighted square.</span>
+        </div>
       </div>
       <div class="home-cards">
-        <a class="home-card" href="#/analysis" data-page-link="analysis">
-          <span class="home-card-number">01 / REVIEW</span>
+        <a class="home-card" href="#/play" data-page-link="play" data-icon="swords">
+          <span class="home-card-number">01 · PLAY</span>
+          <h3>Play a game</h3>
+          <p>Choose a computer opponent and make moves on the board.</p>
+          <span class="home-card-action">Choose an opponent <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="home-card" href="#/analysis" data-page-link="analysis" data-icon="chart">
+          <span class="home-card-number">02 · LEARN</span>
           <h3>Analyse a game</h3>
-          <p>Load a PGN, explore each position and review your moves with Stockfish.</p>
-          <span class="home-card-action">Open analysis</span>
+          <p>Open a PGN, step through the moves and get Stockfish feedback.</p>
+          <span class="home-card-action">Open analysis <span aria-hidden="true">→</span></span>
         </a>
-        <a class="home-card" href="#/play" data-page-link="play">
-          <span class="home-card-number">02 / PLAY</span>
-          <h3>Play a computer opponent</h3>
-          <p>Choose from seven opponents with different playing styles and personalities.</p>
-          <span class="home-card-action">Choose an opponent</span>
+        <a class="home-card" href="#/puzzles" data-page-link="puzzles" data-icon="puzzle">
+          <span class="home-card-number">03 · PRACTISE</span>
+          <h3>Solve puzzles</h3>
+          <p>Try the daily challenge or practise tactics at your own pace.</p>
+          <span class="home-card-action">Start a puzzle <span aria-hidden="true">→</span></span>
         </a>
-        <a class="home-card" href="#/puzzles" data-page-link="puzzles">
-          <span class="home-card-number">03 / PRACTICE</span>
-          <h3>Daily puzzle</h3>
-          <p>A new chess puzzle each day. Find the best moves and build a solving streak.</p>
-          <span class="home-card-action">Solve today's puzzle</span>
-        </a>
-        <a class="home-card" href="#/library" data-page-link="library">
-          <span class="home-card-number">04 / COLLECTION</span>
+        <a class="home-card home-card-library" href="#/library" data-page-link="library" data-icon="library">
+          <span class="home-card-number">YOUR GAMES</span>
           <h3>Game library</h3>
-          <p>Keep useful games on this device and return to them whenever you like.</p>
-          <span class="home-card-action">Open your library</span>
+          <p>Reopen games you have saved on this device.</p>
+          <span class="home-card-action">View saved games <span aria-hidden="true">→</span></span>
         </a>
       </div>
-      <div class="home-stats" id="home-stats">
-        <div class="home-stat"><span>Games saved</span><strong id="home-games-count">0</strong></div>
-        <div class="home-stat"><span>Puzzles solved</span><strong id="home-puzzles-count">0</strong></div>
-        <div class="home-stat"><span>Current streak</span><strong id="home-puzzle-streak">0 days</strong></div>
+      <div class="home-lower">
+        <div class="home-stats" id="home-stats">
+          <div class="home-stat"><span>Games saved</span><strong id="home-games-count">0</strong></div>
+          <div class="home-stat"><span>Puzzles solved</span><strong id="home-puzzles-count">0</strong></div>
+          <div class="home-stat"><span>Current streak</span><strong id="home-puzzle-streak">0 days</strong></div>
+        </div>
+        <section class="panel home-recent-panel">
+          <div class="panel-head"><div class="panel-title"><span class="eyebrow">PICK UP WHERE YOU LEFT OFF</span><h2>Recent games</h2></div><a class="panel-link" href="#/library" data-page-link="library">View library</a></div>
+          <div class="panel-body"><div class="recent-games" id="home-recent-games"><div class="empty-state">Your saved games will appear here.</div></div></div>
+        </section>
       </div>
-      <section class="panel home-recent-panel">
-        <div class="panel-head"><div class="panel-title"><span class="eyebrow">RECENT ACTIVITY</span><h2>Continue where you left off</h2></div><a class="panel-link" href="#/library" data-page-link="library">View library</a></div>
-        <div class="panel-body"><div class="recent-games" id="home-recent-games"><div class="empty-state">Saved games will appear here.</div></div></div>
-      </section>
-      <div class="home-note">Games, preferences and progress are stored in this browser. The daily puzzle is provided by Lichess.</div>
+      <div class="home-note">Your games and settings stay in this browser. Daily puzzles are provided by Lichess.</div>
     </section>
     <section class="settings-page" id="settings-page" aria-labelledby="settings-heading">
       <span class="eyebrow">PREFERENCES</span>
@@ -165,18 +279,15 @@ select,input,textarea{min-height:35px;padding:7px 10px;border:1px solid var(--bo
       </div>
     </section>
 
-ion>
-
-ion>
-
     <div class="workspace" id="workspace">
       <section class="main-column">
         <section class="panel board-panel">
           <div class="board-top">
-            <div class="board-heading"><span class="eyebrow">CHESSBOARD</span><h2 id="board-title">Starting position</h2></div>
+            <div class="board-heading"><span class="eyebrow">YOUR BOARD</span><h2 id="board-title">Starting position</h2></div>
             <div class="turn-indicator" id="turn-indicator">White to move</div>
           </div>
-          <div class="board-wrap" id="board-wrap" data-board-theme="green"><div id="board" aria-label="Interactive chess board"></div></div>
+          <div class="board-guide">Select a piece to see where it can move. You can also drag pieces to a square.</div>
+          <div class="board-wrap" id="board-wrap" data-board-theme="slate"><div id="board" aria-label="Interactive chess board"></div></div>
           <div class="board-footer">
             <div class="board-controls">
               <button class="btn subtle" id="first-btn" title="First position" disabled data-icon="chevrons-left">First</button>
@@ -207,6 +318,8 @@ ion>
             <button class="btn subtle" id="save-board-game-btn" type="button" data-icon="bookmark">Save game</button>
             <button class="btn subtle" id="takeback-btn" type="button" hidden data-icon="undo">Take back</button>
             <button class="btn subtle" id="sound-toggle" type="button" aria-pressed="false" data-icon="volume-x">Sound off</button>
+            <button class="btn subtle" id="import-toggle-btn" type="button" data-icon="folder-open" aria-expanded="false" aria-controls="review-import">Import PGN</button>
+            <button class="btn subtle" id="review-toggle-btn" type="button" data-icon="book-open" aria-expanded="false" aria-controls="review-panel">Full review</button>
           </div>
         </section>
       </section>
@@ -322,7 +435,7 @@ ion>
           </div>
         </section>
       </aside>
-    </
+    </div>
 
     <section class="panel bot-lobby" id="bot-lobby" hidden>
       <div class="panel-head">
@@ -378,11 +491,11 @@ ion>
         </div>
         <p class="import-message" id="bot-lobby-message">Choose an opponent and start a game. Bot ratings are rough difficulty guides.</p>
       </div>
-    </sectdiv>
+    </section>
 
-    <section class="panel import-panel" id="review-import">
+    <section class="panel import-panel" id="review-import" hidden>
       <div class="panel-head">
-        <div class="panel-title"><span class="eyebrow">GAME REVIEW</span><h2>Open a game</h2></div>
+        <div class="panel-title"><span class="eyebrow">IMPORT A GAME</span><h2>Paste your PGN</h2></div>
         <span class="eyebrow">PGN</span>
       </div>
       <div class="panel-body import-layout">
@@ -391,19 +504,19 @@ ion>
           <textarea id="pgn-input" spellcheck="false" placeholder='[Event "Casual Game"]&#10;[White "Player 1"]&#10;[Black "Player 2"]&#10;&#10;1. e4 e5 2. Nf3 Nc6 3. Bc4 ...'></textarea>
         </div>
         <div class="import-side">
-          <p>Load a game to step through the moves, check each position and review both players.</p>
+          <p>PGN is the text format used to store chess games. Paste it here, or load the example game to try the analysis tools.</p>
           <div class="input-actions">
             <button class="btn primary" id="load-pgn-btn" data-icon="folder-open">Load game</button>
             <button class="btn" id="demo-btn" data-icon="book-open">Example game</button>
             <button class="btn subtle" id="save-game-btn" type="button" data-icon="bookmark">Save to library</button>
             <button class="btn subtle" id="clear-btn" data-icon="refresh">New game</button>
           </div>
-          <p class="import-message" id="import-message" role="status" aria-live="polite"></p>
+          <p class="import-message" id="import-message" role="status" aria-live="polite">Your game is processed in this browser.</p>
         </div>
       </div>
-    </sect
+    </section>
 
-    <section class="panel review-panel" id="review-panel">
+    <section class="panel review-panel" id="review-panel" hidden>
       <div class="panel-head">
         <div class="panel-title"><span class="eyebrow">MOVE REVIEW</span><h2>Move-by-move review</h2></div>
         <span class="eyebrow">Engine loss and accuracy</span>
@@ -694,6 +807,8 @@ ion>
     let puzzleMode = "daily";
     let tacticalPuzzleIndex = 0;
     let boardDragState = null;
+    let importPanelOpen = false;
+    let reviewPanelOpen = false;
 
     const BOT_PROFILES = {
       milo: {
@@ -818,12 +933,19 @@ ion>
       analysisScores = [];
       const headers = parsed.getHeaders();
       renderAll(headers);
+      importPanelOpen = false;
+      $("review-import").hidden = true;
+      $("import-toggle-btn").setAttribute("aria-expanded", "false");
       setImportMessage(`Loaded ${moves.length} half-moves successfully.`);
       $("board-status").textContent = moves.length ? "Game loaded. Select a move or step through the game." : "Empty game loaded. You can play from this position.";
     }
 
     function newGame() {
       puzzleSession = null;
+      importPanelOpen = false;
+      reviewPanelOpen = false;
+      $("review-import").hidden = true;
+      $("review-panel").hidden = true;
       playMode = false;
       delete document.documentElement.dataset.playing;
       botThinking = false;
@@ -1904,7 +2026,7 @@ ion>
 
     function navigateToPage(page) {
       const valid = ["home", "analysis", "play", "puzzles", "library", "settings"];
-      if (!valid.includes(page)) page = "analysis";
+      if (!valid.includes(page)) page = "home";
       const nextHash = "#/" + page;
       if (window.location.hash !== nextHash) window.location.hash = nextHash;
       else renderPageRoute();
@@ -1913,16 +2035,20 @@ ion>
     function renderPageRoute() {
       const requested = window.location.hash.replace(/^#\/?/, "").split(/[?]/)[0].toLowerCase();
       const valid = ["home", "analysis", "play", "puzzles", "library", "settings"];
-      const page = valid.includes(requested) ? requested : "analysis";
+      const page = valid.includes(requested) ? requested : "home";
       document.documentElement.dataset.page = page;
       document.querySelectorAll("[data-page-link]").forEach(link => {
         if (link.dataset.pageLink === page) link.setAttribute("aria-current", "page");
         else link.removeAttribute("aria-current");
       });
-      $("review-import").hidden = page !== "analysis";
+      $("review-import").hidden = page !== "analysis" || !importPanelOpen;
+      $("review-panel").hidden = page !== "analysis" || !reviewPanelOpen;
+      $("import-toggle-btn").setAttribute("aria-expanded", String(importPanelOpen));
+      $("review-toggle-btn").setAttribute("aria-expanded", String(reviewPanelOpen));
       $("bot-lobby").hidden = page !== "play" || playMode;
       $("bot-chat-panel").hidden = page !== "play" || !playMode;
       $("daily-puzzle-panel").hidden = page !== "puzzles";
+      if (page !== "analysis") { importPanelOpen = false; reviewPanelOpen = false; }
       const titles = {home:"Home",analysis:"Analysis",play:"Play",puzzles:"Puzzles",library:"Game Library",settings:"Settings"};
       document.title = "Archie's Chess Analysis | " + titles[page];
       if (page !== "puzzles" && puzzleLoading) { puzzleRequestToken += 1; puzzleLoading = false; }
@@ -2514,7 +2640,19 @@ ion>
       button.addEventListener("click", () => sendQuickChat(button.dataset.chat));
     });
     $("board-theme-select").addEventListener("change", event => setBoardTheme(event.target.value));
-    $("copy-fen-btn").addEventListener("click", copyCurrentFen);
+    $("import-toggle-btn").addEventListener("click", () => {
+      importPanelOpen = !importPanelOpen;
+      $("review-import").hidden = !importPanelOpen;
+      $("import-toggle-btn").setAttribute("aria-expanded", String(importPanelOpen));
+      if (importPanelOpen) $("pgn-input").focus();
+    });
+    $("review-toggle-btn").addEventListener("click", () => {
+      reviewPanelOpen = !reviewPanelOpen;
+      $("review-panel").hidden = !reviewPanelOpen;
+      $("review-toggle-btn").setAttribute("aria-expanded", String(reviewPanelOpen));
+      if (reviewPanelOpen) $("review-panel").scrollIntoView({ block: "nearest", behavior: "smooth" });
+    });
+        $("copy-fen-btn").addEventListener("click", copyCurrentFen);
     $("takeback-btn").addEventListener("click", takeBackBotTurn);
     $("rematch-btn").addEventListener("click", () => {
       if (botProfile) startBotGame(botProfile.id);
