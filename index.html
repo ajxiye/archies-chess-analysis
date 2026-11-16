@@ -673,6 +673,8 @@ tbody tr.current-row { background: var(--accent-soft); }
     let playMode = false;
     let playerColor = "w";
     let botToken = 0;
+    let soundEnabled = false;
+    let moveAudioContext = null;
 
     const BOT_PROFILES = {
       milo: {
@@ -880,6 +882,11 @@ tbody tr.current-row { background: var(--accent-soft); }
       updateNavigation();
       updateCurrentEvaluation();
       updateAnalysisProgress(0, positions.length, "Engine not started");
+      const takeback = $("takeback-btn");
+      if (takeback) {
+        takeback.hidden = !playMode;
+        takeback.disabled = !playMode || !moves.length || botThinking || (!game.isGameOver() && game.turn() !== playerColor);
+      }
     }
 
     function renderPositionInfo() {
@@ -1183,6 +1190,7 @@ tbody tr.current-row { background: var(--accent-soft); }
               const played = game.move(move);
               if (!played) throw new Error("Bot returned an illegal move.");
               const chatType = played.san.includes("+") ? "check" : played.captured ? "capture" : "after";
+              playMoveSound(Boolean(played.captured));
               addBotChat(botProfile.name, randomLine(botProfile[chatType]));
               updateGameFromCurrent();
             } catch (error) {
@@ -1282,6 +1290,69 @@ tbody tr.current-row { background: var(--accent-soft); }
       $("board-theme-select").value = selected;
       if (save) {
         try { localStorage.setItem("aca-board-theme", selected); } catch (_) {}
+      }
+    }
+
+    function playMoveSound(isCapture = false) {
+      if (!soundEnabled) return;
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        if (!moveAudioContext) moveAudioContext = new AudioContextClass();
+        if (moveAudioContext.state === "suspended") moveAudioContext.resume();
+        const oscillator = moveAudioContext.createOscillator();
+        const gain = moveAudioContext.createGain();
+        const now = moveAudioContext.currentTime;
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(isCapture ? 330 : 235, now);
+        oscillator.frequency.exponentialRampToValueAtTime(isCapture ? 185 : 155, now + 0.075);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.05, now + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.095);
+        oscillator.connect(gain);
+        gain.connect(moveAudioContext.destination);
+        oscillator.start(now);
+        oscillator.stop(now + 0.1);
+      } catch (_) {
+        // Sound is optional and never affects the game.
+      }
+    }
+
+    function updateSoundButtons() {
+      const label = soundEnabled ? "Sound on" : "Sound off";
+      for (const id of ["sound-toggle", "settings-sound-toggle"]) {
+        const button = $(id);
+        if (button) {
+          button.textContent = label;
+          button.setAttribute("aria-pressed", String(soundEnabled));
+        }
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      try { localStorage.setItem("aca-sound", soundEnabled ? "on" : "off"); } catch (_) {}
+      updateSoundButtons();
+      if (soundEnabled) playMoveSound(false);
+    }
+
+    function takeBackBotTurn() {
+      if (!playMode || !moves.length || botThinking) return;
+      stopBotWorker();
+      const removeCount = Math.min(moves.length, 2);
+      moves = moves.slice(0, moves.length - removeCount);
+      positions = [startFen, ...moves.map(move => move.after)];
+      currentIndex = moves.length;
+      game = getPositionAt(currentIndex);
+      analysisScores = [];
+      renderAll(botGameHeaders());
+      addBotChat("You", "I'd like to take that turn back.", true);
+      if (game.isGameOver()) {
+        finishBotGame();
+      } else if (game.turn() !== playerColor) {
+        window.setTimeout(requestBotMove, 380);
+      } else {
+        $("board-status").textContent = "Your turn. Make a move on the board.";
       }
     }
 
@@ -1476,6 +1547,8 @@ tbody tr.current-row { background: var(--accent-soft); }
     function afterHumanMove() {
       pendingPromotion = null;
       closePromotionModal();
+      const lastMove = game.history({ verbose: true }).slice(-1)[0];
+      playMoveSound(Boolean(lastMove && lastMove.captured));
       updateGameFromCurrent();
       board.position(game.fen(), false);
     }
@@ -1507,6 +1580,11 @@ tbody tr.current-row { background: var(--accent-soft); }
         draggable: true,
         pieceTheme: PIECE_THEME,
         showNotation: true,
+        appearSpeed: 150,
+        moveSpeed: 175,
+        snapSpeed: 125,
+        snapbackSpeed: 165,
+        trashSpeed: 140,
         onDragStart: (source, piece) => {
           if (currentIndex !== moves.length || game.isGameOver() || botThinking || (playMode && game.turn() !== playerColor)) return false;
           const color = game.turn() === "w" ? "w" : "b";
@@ -1588,6 +1666,25 @@ tbody tr.current-row { background: var(--accent-soft); }
     });
     $("board-theme-select").addEventListener("change", event => setBoardTheme(event.target.value));
     $("copy-fen-btn").addEventListener("click", copyCurrentFen);
+    $("takeback-btn").addEventListener("click", takeBackBotTurn);
+    $("rematch-btn").addEventListener("click", () => {
+      if (botProfile) startBotGame(botProfile.id);
+    });
+    $("sound-toggle").addEventListener("click", toggleSound);
+    $("settings-sound-toggle").addEventListener("click", toggleSound);
+    $("settings-btn").addEventListener("click", () => $("settings-modal").classList.add("open"));
+    $("shortcuts-btn").addEventListener("click", () => $("shortcuts-modal").classList.add("open"));
+    document.querySelectorAll("[data-close-modal]").forEach(button => {
+      button.addEventListener("click", () => button.closest(".modal-backdrop").classList.remove("open"));
+    });
+    document.querySelectorAll(".modal-backdrop").forEach(modal => {
+      modal.addEventListener("click", event => {
+        if (event.target === modal && modal.id !== "promotion-modal") modal.classList.remove("open");
+      });
+    });
+    try { soundEnabled = localStorage.getItem("aca-sound") === "on"; }
+    catch (_) { soundEnabled = false; }
+    updateSoundButtons();
     $("download-pgn-btn").addEventListener("click", downloadCurrentPgn);
     try {
       setBoardTheme(localStorage.getItem("aca-board-theme") || "green", false);
@@ -1601,7 +1698,23 @@ tbody tr.current-row { background: var(--accent-soft); }
         target.isContentEditable ||
         ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
       );
-      if (typing || $("promotion-modal").classList.contains("open") || event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.key === "Escape") {
+        document.querySelectorAll(".modal-backdrop.open").forEach(modal => {
+          if (modal.id !== "promotion-modal") modal.classList.remove("open");
+        });
+        return;
+      }
+      if (typing || $("promotion-modal").classList.contains("open")) return;
+      if (event.key === "?" && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        $("shortcuts-modal").classList.add("open");
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        if (!$("analyse-btn").disabled) $("analyse-btn").click();
+        return;
+      }
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
       if (event.key === "ArrowLeft") {
         event.preventDefault();
         updatePosition(currentIndex - 1);
