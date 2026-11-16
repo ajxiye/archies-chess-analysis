@@ -234,7 +234,7 @@ ion>
               <button class="btn subtle" id="daily-puzzle-reset" type="button" data-icon="rotate-ccw" disabled>Retry</button>
               <button class="btn subtle" id="daily-puzzle-refresh" type="button" data-icon="arrow-right">Next puzzle</button>
             </div>
-            <div class="puzzle-source">Daily puzzles are provided by <a href="https://lichess.org/training/daily" target="_blank" rel="noreferrer">Lichess</a>. The tactics set is built into this app.</div>
+            <div class="puzzle-source">Daily puzzles are provided by <a href="https://lichess.org/training/daily" target="_blank" rel="noreferrer">Lichess</a>. Built-in tactics ratings are practice estimates.</div>
           </div>
         </section>
                 <section class="panel engine-panel">
@@ -1851,10 +1851,14 @@ ion>
     }
 
     function loadTacticalPuzzle(index){
+      puzzleRequestToken += 1;
+      puzzleLoading = false;
       const puzzle=TACTICAL_PUZZLES[index%TACTICAL_PUZZLES.length];
       try{
         stopBotWorker();stopAnalysis(false);
         game=new Chess(puzzle.fen);startFen=puzzle.fen;moves=[];positions=[startFen];currentIndex=0;
+        boardFlipped=game.turn()==="w";
+        if(board){board.orientation(boardFlipped?"black":"white");board.position(game.fen(),false);}
         const setup=uciToLegalMove(game,puzzle.setup);
         if(!setup)throw new Error("Puzzle setup move is not legal.");
         const setupResult=game.move(setup);
@@ -1874,7 +1878,7 @@ ion>
         };
         playMode=false;botThinking=false;puzzleSession.playerColor=game.turn();
         boardFlipped=game.turn()==="b";
-        if(board){board.orientation(boardFlipped?"black":"white");board.position(game.fen(),true);board.resize();}
+        if(board){board.position(game.fen(),true);board.resize();}
         $("daily-puzzle-date").textContent="Puzzle "+(index+1)+" of "+TACTICAL_PUZZLES.length;
         $("daily-puzzle-rating").textContent=String(puzzle.rating);
         $("daily-puzzle-plays").textContent="Practice";
@@ -1921,6 +1925,7 @@ ion>
       $("daily-puzzle-panel").hidden = page !== "puzzles";
       const titles = {home:"Home",analysis:"Analysis",play:"Play",puzzles:"Puzzles",library:"Game Library",settings:"Settings"};
       document.title = "Archie's Chess Analysis | " + titles[page];
+      if (page !== "puzzles" && puzzleLoading) { puzzleRequestToken += 1; puzzleLoading = false; }
       if (page === "puzzles") setPuzzleMode(puzzleMode);
       if (page === "library") renderSavedGames();
       if (page === "home") renderHomeSummary();
