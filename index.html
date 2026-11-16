@@ -331,7 +331,31 @@ tbody tr.current-row { background: var(--accent-soft); }
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
 
-  </style>
+  
+:root[data-accent="blue"] { --accent:#399fc8; --accent-hover:#50b4dc; --accent-soft:#153747; }
+:root[data-theme="light"][data-accent="blue"] { --accent:#347f9e; --accent-hover:#286a86; --accent-soft:#e0edf2; }
+:root[data-accent="amber"] { --accent:#d4a545; --accent-hover:#e3b85f; --accent-soft:#3b301b; }
+:root[data-theme="light"][data-accent="amber"] { --accent:#98712c; --accent-hover:#7e5c21; --accent-soft:#f1ead9; }
+:root[data-accent="violet"] { --accent:#a58bd6; --accent-hover:#b59ce4; --accent-soft:#302541; }
+:root[data-theme="light"][data-accent="violet"] { --accent:#7660a6; --accent-hover:#62508d; --accent-soft:#ece7f5; }
+#board-wrap[data-board-size="compact"] { max-width:520px; }
+#board-wrap[data-board-size="standard"] { max-width:640px; }
+#board-wrap[data-board-size="large"] { max-width:760px; }
+.utility-btn { min-height:34px; padding:7px 10px; border:1px solid var(--border-strong); border-radius:6px; background:var(--panel); color:var(--text-soft); font-size:11px; font-weight:600; transition:background-color .16s ease,border-color .16s ease,transform .16s ease; }
+.utility-btn:hover { border-color:var(--accent); background:var(--panel-muted); transform:translateY(-1px); }
+.settings-field { display:grid; grid-template-columns:1fr 145px; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--border); }
+.settings-field label { color:var(--text-soft); font-size:11px; font-weight:600; }
+.settings-field select { width:100%; }
+.modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:17px; }
+.shortcut-row { display:grid; grid-template-columns:1fr auto; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); color:var(--text-soft); font-size:11px; }
+.shortcut-row kbd { display:inline-block; min-width:25px; margin:0 2px; padding:4px 7px; border:1px solid var(--border-strong); border-radius:4px; background:var(--panel-soft); color:var(--text); text-align:center; font:600 10px ui-monospace,Consolas,monospace; }
+#board img[class*="piece-"] { transition:transform .18s ease-in-out,opacity .14s ease; }
+:root[data-motion="reduced"] .panel { animation:none; }
+:root[data-motion="reduced"] #board img[class*="piece-"] { transition-duration:.08s; }
+:root[data-motion="off"] *, :root[data-motion="off"] *::before, :root[data-motion="off"] *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
+
+</style>
 </head>
 <body>
   <main class="app">
@@ -345,6 +369,8 @@ tbody tr.current-row { background: var(--accent-soft); }
       </div>
       <div class="topbar-actions">
         <div class="privacy-pill"><span class="privacy-dot"></span> Games stay on your device</div>
+        <button class="utility-btn" id="shortcuts-btn" type="button">Shortcuts</button>
+        <button class="utility-btn" id="settings-btn" type="button">Settings</button>
         <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light mode" aria-pressed="true">Light mode</button>
       </div>
     </header>
@@ -562,6 +588,29 @@ tbody tr.current-row { background: var(--accent-soft); }
     </footer>
   </main>
 
+  <div class="modal-backdrop" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="modal">
+      <h3 id="settings-title">Settings</h3>
+      <p>Adjust the board and page to suit the way you play.</p>
+      <div class="settings-field"><label for="accent-select">Accent colour</label><select id="accent-select"><option value="green">Green</option><option value="blue">Blue</option><option value="amber">Amber</option><option value="violet">Violet</option></select></div>
+      <div class="settings-field"><label for="board-size-select">Board size</label><select id="board-size-select"><option value="compact">Compact</option><option value="standard">Standard</option><option value="large">Large</option></select></div>
+      <div class="settings-field"><label for="motion-select">Animations</label><select id="motion-select"><option value="full">Full</option><option value="reduced">Reduced</option><option value="off">Off</option></select></div>
+      <div class="settings-field"><label for="settings-sound-toggle">Move sounds</label><button class="btn subtle" id="settings-sound-toggle" type="button">Sound off</button></div>
+      <div class="modal-actions"><button class="btn primary" type="button" data-close-modal>Done</button></div>
+    </div>
+  </div>
+  <div class="modal-backdrop" id="shortcuts-modal" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+    <div class="modal">
+      <h3 id="shortcuts-title">Keyboard shortcuts</h3>
+      <p>Shortcuts work when you are not typing in a text field.</p>
+      <div class="shortcut-row"><span>Previous / next move</span><span><kbd>←</kbd> <kbd>→</kbd></span></div>
+      <div class="shortcut-row"><span>First / last position</span><span><kbd>Home</kbd> <kbd>End</kbd></span></div>
+      <div class="shortcut-row"><span>Flip the board</span><span><kbd>F</kbd></span></div>
+      <div class="shortcut-row"><span>Start analysis</span><span><kbd>A</kbd> or <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span></div>
+      <div class="shortcut-row"><span>Open this guide</span><span><kbd>?</kbd></span></div>
+      <div class="modal-actions"><button class="btn primary" type="button" data-close-modal>Done</button></div>
+    </div>
+  </div>
   <div class="modal-backdrop" id="promotion-modal" role="dialog" aria-modal="true" aria-labelledby="promotion-title">
     <div class="modal">
       <h3 id="promotion-title">Choose a promotion</h3>
