@@ -173,6 +173,18 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
   .puzzle-actions .btn{flex:1 1 calc(50% - 4px)}
 }
 
+
+@media(min-width:781px) and (min-height:680px){
+  .app{overflow-x:hidden;overflow-y:auto}
+  :root[data-page="play"]:not([data-playing]) .workspace{display:none!important}
+  :root[data-page="play"]:not([data-playing]) .bot-lobby{margin-top:14px}
+}
+.home-card-library{background:var(--panel-2)}
+.home-card-library>.aca-icon{color:#aeb8a2}
+.board-guide{display:flex;align-items:center;gap:7px}
+.board-guide::before{content:"";display:inline-block;width:6px;height:6px;flex:0 0 auto;border-radius:50%;background:var(--accent)}
+@media(max-width:780px){.home-card-library{min-height:138px}}
+
 </style>
 </head>
 <body>
@@ -219,25 +231,25 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
           <span class="home-card-number">01 · PLAY</span>
           <h3>Play a game</h3>
           <p>Choose a computer opponent and make moves on the board.</p>
-          <span class="home-card-action">Choose an opponent <span aria-hidden="true">→</span></span>
+          <span class="home-card-action">Choose an opponent </span>
         </a>
         <a class="home-card" href="#/analysis" data-page-link="analysis" data-icon="chart">
           <span class="home-card-number">02 · LEARN</span>
           <h3>Analyse a game</h3>
           <p>Open a PGN, step through the moves and get Stockfish feedback.</p>
-          <span class="home-card-action">Open analysis <span aria-hidden="true">→</span></span>
+          <span class="home-card-action">Open analysis </span>
         </a>
         <a class="home-card" href="#/puzzles" data-page-link="puzzles" data-icon="puzzle">
           <span class="home-card-number">03 · PRACTISE</span>
           <h3>Solve puzzles</h3>
           <p>Try the daily challenge or practise tactics at your own pace.</p>
-          <span class="home-card-action">Start a puzzle <span aria-hidden="true">→</span></span>
+          <span class="home-card-action">Start a puzzle </span>
         </a>
         <a class="home-card home-card-library" href="#/library" data-page-link="library" data-icon="library">
           <span class="home-card-number">YOUR GAMES</span>
           <h3>Game library</h3>
           <p>Reopen games you have saved on this device.</p>
-          <span class="home-card-action">View saved games <span aria-hidden="true">→</span></span>
+          <span class="home-card-action">View saved games </span>
         </a>
       </div>
       <div class="home-lower">
@@ -296,11 +308,11 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
               <button class="btn subtle" id="last-btn" title="Final position" disabled data-icon="chevrons-right">Last</button>
               <button class="btn subtle" id="flip-btn" data-icon="flip-horizontal">Flip board</button>
             </div>
-            <div class="board-status" id="board-status">Load a PGN to begin, or play moves from the starting position.</div>
+            <div class="board-status" id="board-status">Select a piece to see its legal moves, or drag it to a square.</div>
           </div>
           <div class="shortcut-hint">
             Keyboard shortcuts:
-            <kbd>←</kbd><kbd>→</kbd> Previous / next move
+            <kbd>Left</kbd><kbd>Right</kbd> Previous / next move
             <kbd>Home</kbd><kbd>End</kbd> First / last position
             <kbd>F</kbd> Flip board
             <kbd>A</kbd> Analyse
@@ -537,7 +549,7 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
     <div class="modal">
       <h3 id="shortcuts-title">Keyboard shortcuts</h3>
       <p>Shortcuts work when you are not typing in a text field.</p>
-      <div class="shortcut-row"><span>Previous / next move</span><span><kbd>←</kbd> <kbd>→</kbd></span></div>
+      <div class="shortcut-row"><span>Previous / next move</span><span><kbd>Left</kbd> <kbd>Right</kbd></span></div>
       <div class="shortcut-row"><span>First / last position</span><span><kbd>Home</kbd> <kbd>End</kbd></span></div>
       <div class="shortcut-row"><span>Flip the board</span><span><kbd>F</kbd></span></div>
       <div class="shortcut-row"><span>Start analysis</span><span><kbd>A</kbd> or <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span></div>
@@ -946,6 +958,8 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       reviewPanelOpen = false;
       $("review-import").hidden = true;
       $("review-panel").hidden = true;
+      $("import-toggle-btn").setAttribute("aria-expanded", "false");
+      $("review-toggle-btn").setAttribute("aria-expanded", "false");
       playMode = false;
       delete document.documentElement.dataset.playing;
       botThinking = false;
@@ -964,7 +978,7 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       $("pgn-input").value = "";
       renderAll({});
       setImportMessage("New game ready.");
-      $("board-status").textContent = "Starting position. Drag a white piece to make the first move.";
+      $("board-status").textContent = "Starting position. Select a white piece to see its legal moves.";
     }
 
     function updateGameFromCurrent(animateBoard = true) {
