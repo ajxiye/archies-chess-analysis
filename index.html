@@ -214,7 +214,7 @@ select {
 #board-wrap[data-board-theme="slate"] .black-3c85d { background-color: #78838c !important; }
 .board-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
 .board-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.board-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.board-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 10px; }
 .board-tools label { color: var(--muted); font-size: 10px; }
 .board-status { color: var(--muted); font-size: 10px; line-height: 1.5; text-align: right; }
 .shortcut-hint { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--border); color: var(--muted); font-size: 9px; line-height: 1.5; }
@@ -1218,22 +1218,28 @@ tbody tr.current-row { background: var(--accent-soft); }
       const headers = botGameHeaders();
       const white = headers.White || "White";
       const black = headers.Black || "Black";
-      const result = game.isCheckmate()
-        ? (game.turn() === "w" ? "0-1" : "1-0")
-        : game.isDraw() ? "1/2-1/2" : "*";
-      const pgn = [
+      const exportGame = new Chess(startFen);
+      for (const san of history) exportGame.move(san);
+      const result = exportGame.isCheckmate()
+        ? (exportGame.turn() === "w" ? "0-1" : "1-0")
+        : exportGame.isDraw() ? "1/2-1/2" : "*";
+      const safeTag = value => String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[\\r\\n]/g, " ");
+      const tags = [
         '[Event "Archie Chess Analysis"]',
-        '[White "' + white.replace(/["\\]/g, "") + '"]',
-        '[Black "' + black.replace(/["\\]/g, "") + '"]',
-        '[Result "' + result + '"]',
-        "",
-        history.reduce((out, san, index) => {
-          if (index % 2 === 0) out.push((Math.floor(index / 2) + 1) + ". " + san);
-          else out[out.length - 1] += " " + san;
-          return out;
-        }, []).join(" "),
-        result
-      ].join("\n");
+        '[White "' + safeTag(white) + '"]',
+        '[Black "' + safeTag(black) + '"]',
+        '[Result "' + result + '"]'
+      ];
+      if (startFen !== START_FEN) {
+        tags.push('[SetUp "1"]');
+        tags.push('[FEN "' + safeTag(startFen) + '"]');
+      }
+      const notation = history.reduce((out, san, index) => {
+        if (index % 2 === 0) out.push((Math.floor(index / 2) + 1) + ". " + san);
+        else out[out.length - 1] += " " + san;
+        return out;
+      }, []).join(" ");
+      const pgn = [...tags, "", notation, result].join("\\n");
       const blob = new Blob([pgn], { type: "application/x-chess-pgn;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
