@@ -1558,6 +1558,455 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
       }, 280);
     }
 
+    function buildCurrentPgn() {
+      const history = moves.map(move => move.san);
+      const headers = botGameHeaders();
+      const white = $("white-name").textContent || headers.White || "White";
+      const black = $("black-name").textContent || headers.Black || "Black";
+      const exportGame = new Chess(startFen);
+      for (const san of history) exportGame.move(san);
+      const result = exportGame.isCheckmate()
+        ? (exportGame.turn() === "w" ? "0-1" : "1-0")
+        : exportGame.isDraw() ? "1/2-1/2" : "*";
+      const safeTag = value => String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[\r\n]/g, " ");
+      const tags = [
+        '[Event "Archie Chess Analysis"]',
+        '[White "' + safeTag(white) + '"]',
+        '[Black "' + safeTag(black) + '"]',
+        '[Result "' + result + '"]'
+      ];
+      if (startFen !== START_FEN) {
+        tags.push('[SetUp "1"]');
+        tags.push('[FEN "' + safeTag(startFen) + '"]');
+      }
+      const notation = history.reduce((out, san, index) => {
+        if (index % 2 === 0) out.push((Math.floor(index / 2) + 1) + ". " + san);
+        else out[out.length - 1] += " " + san;
+        return out;
+      }, []).join(" ");
+      return [...tags, "", notation, result].join("\n");
+    }
+
+    function downloadTextFile(filename, content, type) {
+      const blob = new Blob([content], { type: type || "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function downloadCurrentPgn() {
+      downloadTextFile("archies-chess-game.pgn", buildCurrentPgn(), "application/x-chess-pgn;charset=utf-8");
+    }
+
+    function getSavedGames() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem("aca-saved-games") || "[]");
+        return Array.isArray(parsed) ? parsed.filter(item => item && typeof item.pgn === "string" && item.id) : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function storeSavedGames(games) {
+      try {
+        localStorage.setItem("aca-saved-games", JSON.stringify(games.slice(0, 60)));
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function saveCurrentGameToLibrary() {
+      if (!moves.length) {
+        setImportMessage("Load or play a game before saving it.", true);
+        return;
+      }
+      const games = getSavedGames();
+      const white = $("white-name").textContent || "White";
+      const black = $("black-name").textContent || "Black";
+      const item = {
+        id: String(Date.now()) + "-" + Math.random().toString(36).slice(2, 7),
+        title: white + " vs " + black,
+        white,
+        black,
+        savedAt: new Date().toISOString(),
+        moveCount: moves.length,
+        pgn: buildCurrentPgn()
+      };
+      games.unshift(item);
+      if (!storeSavedGames(games)) {
+        setImportMessage("Could not save the game. Browser storage may be full.", true);
+        return;
+      }
+      setImportMessage("Game saved to your library.");
+      renderSavedGames();
+      renderHomeSummary();
+    }
+
+    function openSavedGame(id) {
+      const item = getSavedGames().find(gameItem => gameItem.id === id);
+      if (!item) return;
+      try {
+        loadGameFromPgn(item.pgn);
+        setImportMessage("Opened " + item.title + ".");
+      } catch (error) {
+        setImportMessage("This saved game could not be opened: " + error.message, true);
+      }
+    }
+
+    function deleteSavedGame(id) {
+      const games = getSavedGames().filter(item => item.id !== id);
+      storeSavedGames(games);
+      renderSavedGames();
+      renderHomeSummary();
+    }
+
+    function downloadSavedGame(id) {
+      const item = getSavedGames().find(gameItem => gameItem.id === id);
+      if (item) downloadTextFile("archies-" + item.id + ".pgn", item.pgn, "application/x-chess-pgn;charset=utf-8");
+    }
+
+    function renderSavedGameRows(container, games, compact) {
+      container.replaceChildren();
+      if (!games.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        empty.textContent = "No saved games yet. Save a game from the Analysis page to keep it here.";
+        container.append(empty);
+        return;
+      }
+      for (const item of games) {
+        const row = document.createElement("div");
+        row.className = compact ? "recent-game" : "library-game";
+        const copy = document.createElement("div");
+        const title = document.createElement("div");
+        title.className = compact ? "recent-game-title" : "library-game-title";
+        title.textContent = item.title || ((item.white || "White") + " vs " + (item.black || "Black"));
+        const meta = document.createElement("div");
+        meta.className = compact ? "recent-game-meta" : "library-game-meta";
+        const savedDate = item.savedAt ? new Date(item.savedAt) : null;
+        const formatted = savedDate && !Number.isNaN(savedDate.getTime()) ? savedDate.toLocaleDateString() : "Saved game";
+        meta.textContent = formatted + " · " + (item.moveCount || 0) + " half-moves";
+        copy.append(title, meta);
+
+        const actions = document.createElement("div");
+        actions.className = compact ? "recent-game-actions" : "library-game-actions";
+        const open = document.createElement("button");
+        open.type = "button";
+        open.className = "btn primary";
+        open.textContent = "Open";
+        open.addEventListener("click", () => openSavedGame(item.id));
+        const download = document.createElement("button");
+        download.type = "button";
+        download.className = "btn subtle";
+        download.textContent = "Download";
+        download.addEventListener("click", () => downloadSavedGame(item.id));
+        actions.append(open, download);
+        if (!compact) {
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.className = "btn subtle";
+          remove.textContent = "Delete";
+          remove.addEventListener("click", () => deleteSavedGame(item.id));
+          actions.append(remove);
+        }
+        row.append(copy, actions);
+        container.append(row);
+      }
+    }
+
+    function renderSavedGames() {
+      const games = getSavedGames();
+      const count = $("library-count");
+      if (count) count.textContent = games.length + (games.length === 1 ? " game" : " games");
+      const list = $("saved-games-list");
+      if (list) renderSavedGameRows(list, games, false);
+    }
+
+    function exportAllSavedGames() {
+      const games = getSavedGames();
+      if (!games.length) {
+        $("library-count").textContent = "Nothing to export";
+        return;
+      }
+      const combined = games.map(item => item.pgn.trim()).join("\n\n");
+      downloadTextFile("archies-chess-library.pgn", combined + "\n", "application/x-chess-pgn;charset=utf-8");
+    }
+
+    function readPuzzleStats() {
+      try {
+        const value = JSON.parse(localStorage.getItem("aca-puzzle-stats") || "{}");
+        return {
+          solved: Number(value.solved) || 0,
+          streak: Number(value.streak) || 0,
+          lastDay: typeof value.lastDay === "string" ? value.lastDay : ""
+        };
+      } catch (_) {
+        return { solved: 0, streak: 0, lastDay: "" };
+      }
+    }
+
+    function renderHomeSummary() {
+      const games = getSavedGames();
+      const stats = readPuzzleStats();
+      if ($("home-games-count")) $("home-games-count").textContent = String(games.length);
+      if ($("home-puzzles-count")) $("home-puzzles-count").textContent = String(stats.solved);
+      if ($("home-puzzle-streak")) $("home-puzzle-streak").textContent = stats.streak + (stats.streak === 1 ? " day" : " days");
+      if ($("home-recent-games")) renderSavedGameRows($("home-recent-games"), games.slice(0, 3), true);
+    }
+
+    function utcDayKey(date = new Date()) {
+      return date.toISOString().slice(0, 10);
+    }
+
+    function uciToLegalMove(chess, uci) {
+      if (typeof uci !== "string" || !/^[a-h][1-8][a-h][1-8][qrbn]?$/i.test(uci)) return null;
+      const from = uci.slice(0, 2);
+      const to = uci.slice(2, 4);
+      const promotion = uci[4];
+      const legal = chess.moves({ square: from, verbose: true }).find(move =>
+        move.from === from && move.to === to && (move.promotion || "") === (promotion || "")
+      );
+      if (!legal) return null;
+      return { from, to, ...(promotion ? { promotion } : {}) };
+    }
+
+    function validateDailyPuzzle(payload) {
+      if (!payload || !payload.puzzle || !Array.isArray(payload.puzzle.solution) || !payload.puzzle.solution.length) {
+        throw new Error("The daily puzzle response was incomplete.");
+      }
+      const puzzle = payload.puzzle;
+      const baseFen = puzzle.fen || "";
+      if (!baseFen) throw new Error("The daily puzzle did not include a starting position.");
+      const candidates = [baseFen];
+      if (puzzle.lastMove) {
+        try {
+          const withLastMove = new Chess(baseFen);
+          const lastMove = uciToLegalMove(withLastMove, puzzle.lastMove);
+          if (lastMove) {
+            withLastMove.move(lastMove);
+            candidates.push(withLastMove.fen());
+          }
+        } catch (_) {}
+      }
+      for (const candidateFen of candidates) {
+        try {
+          const check = new Chess(candidateFen);
+          let valid = true;
+          for (const uci of puzzle.solution) {
+            const move = uciToLegalMove(check, uci);
+            if (!move) { valid = false; break; }
+            check.move(move);
+          }
+          if (valid) return { ...payload, startFen: candidateFen };
+        } catch (_) {}
+      }
+      throw new Error("The puzzle moves did not match the starting position.");
+    }
+
+    function setDailyPuzzleMessage(message, status) {
+      const element = $("daily-puzzle-message");
+      if (!element) return;
+      element.textContent = message;
+      element.dataset.status = status || "normal";
+    }
+
+    function updateDailyPuzzleStats() {
+      const stats = readPuzzleStats();
+      $("daily-puzzle-streak").textContent = String(stats.streak);
+      $("home-puzzles-count").textContent = String(stats.solved);
+      $("home-puzzle-streak").textContent = stats.streak + (stats.streak === 1 ? " day" : " days");
+    }
+
+    function markDailyPuzzleSolved() {
+      if (!puzzleSession || puzzleSession.solved) return;
+      puzzleSession.solved = true;
+      const today = puzzleSession.date;
+      const stats = readPuzzleStats();
+      const solvedKey = "aca-puzzle-solved-" + today;
+      let alreadySolved = false;
+      try { alreadySolved = localStorage.getItem(solvedKey) === puzzleSession.id; } catch (_) {}
+      if (!alreadySolved) {
+        const yesterday = utcDayKey(new Date(Date.now() - 86400000));
+        stats.streak = stats.lastDay === yesterday ? stats.streak + 1 : stats.lastDay === today ? stats.streak : 1;
+        stats.solved += 1;
+        stats.lastDay = today;
+        try {
+          localStorage.setItem(solvedKey, puzzleSession.id);
+          localStorage.setItem("aca-puzzle-stats", JSON.stringify(stats));
+        } catch (_) {}
+      }
+      setDailyPuzzleMessage(alreadySolved ? "Puzzle complete. You have already recorded today's solve." : "Correct. You solved today's puzzle.", "success");
+      $("daily-puzzle-hint").disabled = true;
+      $("daily-puzzle-reset").disabled = false;
+      updateDailyPuzzleStats();
+      renderHomeSummary();
+      $("board-status").textContent = "Puzzle solved.";
+    }
+
+    function playPuzzleReply() {
+      if (!puzzleSession || puzzleSession.solved) return;
+      if (puzzleSession.index >= puzzleSession.solution.length) {
+        markDailyPuzzleSolved();
+        return;
+      }
+      const reply = uciToLegalMove(game, puzzleSession.solution[puzzleSession.index]);
+      if (!reply) {
+        setDailyPuzzleMessage("The puzzle response could not be played. Refresh the puzzle and try again.", "error");
+        return;
+      }
+      const played = game.move(reply);
+      puzzleSession.index += 1;
+      playMoveSound(Boolean(played && played.captured));
+      if (board) board.position(game.fen(), true);
+      if (puzzleSession.index >= puzzleSession.solution.length) {
+        markDailyPuzzleSolved();
+      } else {
+        setDailyPuzzleMessage("Your opponent has replied. Find the next move.", "normal");
+        $("board-status").textContent = "Your turn to solve the next part.";
+      }
+    }
+
+    function attemptDailyPuzzleMove(from, to, promotion) {
+      if (!puzzleSession || puzzleSession.solved || puzzleSession.index >= puzzleSession.solution.length) return false;
+      const expected = String(puzzleSession.solution[puzzleSession.index]).toLowerCase();
+      const actual = (from + to + (promotion || "")).toLowerCase();
+      if (actual !== expected) {
+        puzzleSession.mistakes += 1;
+        setDailyPuzzleMessage("Not quite. Look for a stronger move and try again.", "error");
+        return false;
+      }
+      const move = game.move({ from, to, ...(promotion ? { promotion } : {}) });
+      if (!move) return false;
+      clearBoardSelection();
+      playMoveSound(Boolean(move.captured));
+      if (board) board.position(game.fen(), true);
+      puzzleSession.index += 1;
+      if (puzzleSession.index >= puzzleSession.solution.length) {
+        markDailyPuzzleSolved();
+      } else {
+        setDailyPuzzleMessage("Good move. Your opponent is replying.", "success");
+        window.setTimeout(playPuzzleReply, 430);
+      }
+      return true;
+    }
+
+    function resetDailyPuzzle() {
+      if (!puzzleSession) return;
+      clearBoardSelection();
+      puzzleSession.index = 0;
+      puzzleSession.solved = false;
+      puzzleSession.mistakes = 0;
+      game = new Chess(puzzleSession.startFen);
+      startFen = puzzleSession.startFen;
+      moves = [];
+      positions = [startFen];
+      currentIndex = 0;
+      if (board) board.position(game.fen(), true);
+      setDailyPuzzleMessage("Find the best continuation. You are playing " + (game.turn() === "w" ? "White." : "Black."), "normal");
+      $("daily-puzzle-hint").disabled = false;
+      $("daily-puzzle-reset").disabled = true;
+      $("board-status").textContent = "Find the best move.";
+      renderPositionInfo();
+    }
+
+    function showDailyPuzzleHint() {
+      if (!puzzleSession || puzzleSession.solved) return;
+      const uci = puzzleSession.solution[puzzleSession.index];
+      if (!uci) return;
+      const destination = uci.slice(2, 4);
+      setDailyPuzzleMessage("Hint: look for a move that reaches " + destination + ".", "hint");
+      puzzleSession.hintsUsed = true;
+    }
+
+    async function loadDailyPuzzle(force = false) {
+      if (puzzleLoading) return;
+      const today = utcDayKey();
+      if (!force && puzzleSession && puzzleSession.date === today) return;
+      puzzleLoading = true;
+      const requestId = ++puzzleRequestToken;
+      $("daily-puzzle-date").textContent = today;
+      setDailyPuzzleMessage("Loading today's puzzle…", "normal");
+      $("daily-puzzle-hint").disabled = true;
+      $("daily-puzzle-reset").disabled = true;
+      try {
+        const response = await fetch("https://lichess.org/api/puzzle/daily", {
+          method: "GET",
+          headers: { Accept: "application/json" },
+          cache: "no-store"
+        });
+        if (!response.ok) throw new Error("Puzzle service returned " + response.status + ".");
+        const payload = validateDailyPuzzle(await response.json());
+        if (requestId !== puzzleRequestToken) return;
+        puzzleSession = {
+          id: payload.puzzle.id,
+          date: today,
+          startFen: payload.startFen,
+          solution: payload.puzzle.solution,
+          index: 0,
+          solved: false,
+          mistakes: 0,
+          hintsUsed: false,
+          rating: payload.puzzle.rating,
+          plays: payload.puzzle.plays,
+          themes: payload.puzzle.themes || []
+        };
+        startFen = puzzleSession.startFen;
+        moves = [];
+        positions = [startFen];
+        currentIndex = 0;
+        game = new Chess(startFen);
+        playMode = false;
+        botThinking = false;
+        boardFlipped = game.turn() === "b";
+        if (board) {
+          board.orientation(boardFlipped ? "black" : "white");
+          board.position(game.fen(), true);
+        }
+        const dateLabel = new Date(today + "T00:00:00Z").toLocaleDateString(undefined, { weekday:"long", month:"long", day:"numeric", timeZone:"UTC" });
+        $("daily-puzzle-date").textContent = dateLabel;
+        $("daily-puzzle-rating").textContent = String(puzzleSession.rating || "—");
+        $("daily-puzzle-plays").textContent = Number(puzzleSession.plays || 0).toLocaleString();
+        $("daily-puzzle-themes").textContent = (puzzleSession.themes || []).slice(0, 5).map(theme => theme.replace(/([A-Z])/g, " $1")).join(" · ");
+        $("daily-puzzle-hint").disabled = false;
+        $("daily-puzzle-reset").disabled = true;
+        setDailyPuzzleMessage("Find the best continuation. You are playing " + (game.turn() === "w" ? "White." : "Black."), "normal");
+        $("board-status").textContent = "Find the best move.";
+        if (board) board.resize();
+        renderPositionInfo();
+        updateDailyPuzzleStats();
+      } catch (error) {
+        if (requestId !== puzzleRequestToken) return;
+        let cached = null;
+        try {
+          const stored = JSON.parse(localStorage.getItem("aca-daily-puzzle-cache") || "null");
+          if (stored && stored.date === today && stored.payload) cached = validateDailyPuzzle(stored.payload);
+        } catch (_) {}
+        if (cached) {
+          puzzleSession = {
+            id: cached.puzzle.id, date: today, startFen: cached.startFen,
+            solution: cached.puzzle.solution, index: 0, solved: false, mistakes: 0,
+            hintsUsed: false, rating: cached.puzzle.rating, plays: cached.puzzle.plays,
+            themes: cached.puzzle.themes || []
+          };
+          startFen = puzzleSession.startFen;
+          moves = []; positions = [startFen]; currentIndex = 0; game = new Chess(startFen);
+          if (board) board.position(game.fen(), true);
+          setDailyPuzzleMessage("Using the saved copy of today's puzzle. The live feed could not be reached.", "hint");
+          $("daily-puzzle-hint").disabled = false;
+          $("daily-puzzle-reset").disabled = true;
+        } else {
+          setDailyPuzzleMessage("Today's puzzle could not be loaded. Check your connection and use Refresh to try again.", "error");
+        }
+        $("board-status").textContent = "Daily puzzle is unavailable.";
+      } finally {
+        if (requestId === puzzleRequestToken) puzzleLoading = false;
+      }
+    }
+
     function navigateToPage(page) {
       const valid = ["home", "analysis", "play", "puzzles", "library", "settings"];
       if (!valid.includes(page)) page = "home";
@@ -1920,6 +2369,9 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
 
     function playMoveFromBoard(from, to, promotion) {
       if (!canHumanMoveOnBoard()) return false;
+      if (puzzleSession && document.documentElement.dataset.page === "puzzles") {
+        return attemptDailyPuzzleMove(from, to, promotion);
+      }
       try {
         const move = game.move({ from, to, ...(promotion ? { promotion } : {}) });
         if (!move) return false;
@@ -2051,11 +2503,8 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
         if (!pendingPromotion) return;
         const { from, to } = pendingPromotion;
         try {
-          const result = game.move({ from, to, promotion: button.dataset.piece });
-          if (result) {
-            clearBoardSelection();
-            afterHumanMove();
-          }
+          const result = playMoveFromBoard(from, to, button.dataset.piece);
+          if (result) clearBoardSelection();
           else { pendingPromotion = null; closePromotionModal(); }
         } catch (_) {
           pendingPromotion = null;
@@ -2130,6 +2579,14 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
     catch (_) { soundEnabled = false; }
     updateSoundButtons();
     $("download-pgn-btn").addEventListener("click", downloadCurrentPgn);
+    $("save-game-btn").addEventListener("click", saveCurrentGameToLibrary);
+    $("library-export-all").addEventListener("click", exportAllSavedGames);
+    $("daily-puzzle-hint").addEventListener("click", showDailyPuzzleHint);
+    $("daily-puzzle-reset").addEventListener("click", resetDailyPuzzle);
+    $("daily-puzzle-refresh").addEventListener("click", () => {
+      puzzleSession = null;
+      loadDailyPuzzle(true);
+    });
     try {
       setBoardTheme(localStorage.getItem("aca-board-theme") || "green", false);
     } catch (_) {
