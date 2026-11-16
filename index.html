@@ -355,6 +355,7 @@ tbody tr.current-row { background: var(--accent-soft); }
 :root[data-motion="off"] *, :root[data-motion="off"] *::before, :root[data-motion="off"] *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
 
+.board-wrap { width:min(100%,760px); }
 </style>
 </head>
 <body>
@@ -1704,7 +1705,7 @@ tbody tr.current-row { background: var(--accent-soft); }
         });
         return;
       }
-      if (typing || $("promotion-modal").classList.contains("open")) return;
+      if (typing || document.querySelector(".modal-backdrop.open")) return;
       if (event.key === "?" && !event.ctrlKey && !event.metaKey && !event.altKey) {
         $("shortcuts-modal").classList.add("open");
         return;
@@ -1745,6 +1746,7 @@ tbody tr.current-row { background: var(--accent-soft); }
       const accentSelect = document.getElementById("accent-select");
       const boardSizeSelect = document.getElementById("board-size-select");
       const motionSelect = document.getElementById("motion-select");
+      const boardWrap = document.getElementById("board-wrap");
 
       function read(key, fallback) {
         try { return localStorage.getItem(key) || fallback; } catch (_) { return fallback; }
@@ -1769,9 +1771,10 @@ tbody tr.current-row { background: var(--accent-soft); }
       }
 
       applyTheme(read("aca-theme", "dark"), false);
-      root.dataset.accent = read("aca-accent", "green");
-      root.dataset.boardSize = read("aca-board-size", "large");
-      root.dataset.motion = read("aca-motion", "full");
+      root.dataset.accent = ["green","blue","amber","violet"].includes(read("aca-accent", "green")) ? read("aca-accent", "green") : "green";
+      root.dataset.boardSize = ["compact","standard","large"].includes(read("aca-board-size", "large")) ? read("aca-board-size", "large") : "large";
+      root.dataset.motion = ["full","reduced","off"].includes(read("aca-motion", "full")) ? read("aca-motion", "full") : "full";
+      boardWrap.dataset.boardSize = root.dataset.boardSize;
       accentSelect.value = root.dataset.accent;
       boardSizeSelect.value = root.dataset.boardSize;
       motionSelect.value = root.dataset.motion;
@@ -1780,7 +1783,10 @@ tbody tr.current-row { background: var(--accent-soft); }
         applyTheme(root.dataset.theme === "dark" ? "light" : "dark", true);
       });
       accentSelect.addEventListener("change", () => applyChoice(accentSelect, "accent", "aca-accent", ["green","blue","amber","violet"], "green"));
-      boardSizeSelect.addEventListener("change", () => applyChoice(boardSizeSelect, "boardSize", "aca-board-size", ["compact","standard","large"], "large"));
+      boardSizeSelect.addEventListener("change", () => {
+        applyChoice(boardSizeSelect, "boardSize", "aca-board-size", ["compact","standard","large"], "large");
+        boardWrap.dataset.boardSize = boardSizeSelect.value;
+      });
       motionSelect.addEventListener("change", () => applyChoice(motionSelect, "motion", "aca-motion", ["full","reduced","off"], "full"));
     })();
   </script>
