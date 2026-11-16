@@ -1802,19 +1802,45 @@ html[data-page="puzzles"] .best-move-row{display:none}
         throw new Error("The daily puzzle response was incomplete.");
       }
       const puzzle = payload.puzzle;
-      const baseFen = puzzle.fen || "";
-      if (!baseFen) throw new Error("The daily puzzle did not include a starting position.");
-      const candidates = [baseFen];
-      if (puzzle.lastMove) {
+      const baseCandidates = [];
+
+      if (puzzle.fen) baseCandidates.push(puzzle.fen);
+
+      // Some puzzle responses omit FEN. Rebuild nearby positions from the supplied game PGN.
+      if (!baseCandidates.length && payload.game && payload.game.pgn) {
         try {
-          const withLastMove = new Chess(baseFen);
-          const lastMove = uciToLegalMove(withLastMove, puzzle.lastMove);
-          if (lastMove) {
-            withLastMove.move(lastMove);
-            candidates.push(withLastMove.fen());
+          const sourceGame = new Chess();
+          sourceGame.loadPgn(payload.game.pgn);
+          const history = sourceGame.history({ verbose: true });
+          const initialFen = history.length ? history[0].before : START_FEN;
+          const ply = Number(puzzle.initialPly) || 0;
+          const lengths = [...new Set([ply, ply - 1, ply + 1, ply - 2].filter(n => n >= 0 && n <= history.length))];
+          for (const length of lengths) {
+            const position = new Chess(initialFen);
+            for (let index = 0; index < length; index++) position.move(history[index].san);
+            baseCandidates.push(position.fen());
           }
         } catch (_) {}
       }
+
+      if (!baseCandidates.length) throw new Error("The daily puzzle did not include a usable starting position.");
+
+      const candidates = [];
+      for (const fen of baseCandidates) {
+        if (!candidates.includes(fen)) candidates.push(fen);
+        if (puzzle.lastMove) {
+          try {
+            const withLastMove = new Chess(fen);
+            const lastMove = uciToLegalMove(withLastMove, puzzle.lastMove);
+            if (lastMove) {
+              withLastMove.move(lastMove);
+              const afterLastMove = withLastMove.fen();
+              if (!candidates.includes(afterLastMove)) candidates.push(afterLastMove);
+            }
+          } catch (_) {}
+        }
+      }
+
       for (const candidateFen of candidates) {
         try {
           const check = new Chess(candidateFen);
@@ -1827,7 +1853,7 @@ html[data-page="puzzles"] .best-move-row{display:none}
           if (valid) return { ...payload, startFen: candidateFen };
         } catch (_) {}
       }
-      throw new Error("The puzzle moves did not match the starting position.");
+      throw new Error("The puzzle moves did not match the available starting positions.");
     }
 
     function setDailyPuzzleMessage(message, status) {
