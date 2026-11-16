@@ -1904,7 +1904,7 @@ ion>
 
     function navigateToPage(page) {
       const valid = ["home", "analysis", "play", "puzzles", "library", "settings"];
-      if (!valid.includes(page)) page = "home";
+      if (!valid.includes(page)) page = "analysis";
       const nextHash = "#/" + page;
       if (window.location.hash !== nextHash) window.location.hash = nextHash;
       else renderPageRoute();
