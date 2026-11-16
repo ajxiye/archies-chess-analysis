@@ -58,6 +58,16 @@ select,input,textarea{min-height:35px;padding:7px 10px;border:1px solid var(--bo
 .aca-legal-dot::after{content:"";position:absolute;left:50%;top:50%;width:26%;height:26%;border-radius:50%;background:rgba(0,0,0,.25);transform:translate(-50%,-50%)}
 .aca-legal-capture-ring::after{content:"";position:absolute;left:50%;top:50%;width:84%;height:84%;border:5px solid rgba(0,0,0,.25);border-radius:50%;transform:translate(-50%,-50%)}
 
+
+:root[data-accent="blue"]{--accent:#3692e7;--accent-hover:#54a3ee;--accent-soft:rgba(54,146,231,.14)}
+:root[data-accent="amber"]{--accent:#b58a38;--accent-hover:#c69a48;--accent-soft:rgba(181,138,56,.14)}
+:root[data-accent="violet"]{--accent:#8b78bc;--accent-hover:#9d8acb;--accent-soft:rgba(139,120,188,.14)}
+#board-wrap[data-board-size="compact"]{max-width:500px}
+#board-wrap[data-board-size="standard"]{max-width:600px}
+#board-wrap[data-board-size="large"]{max-width:680px}
+:root[data-motion="off"] .aca-piece{transition:none!important}
+:root[data-motion="reduced"] .aca-piece{transition-duration:70ms!important}
+
 </style>
 </head>
 <body>
@@ -157,61 +167,7 @@ select,input,textarea{min-height:35px;padding:7px 10px;border:1px solid var(--bo
 
 ion>
 
-    <section class="panel bot-lobby" id="bot-lobby" hidden>
-      <div class="panel-head">
-        <div class="panel-title"><span class="eyebrow">CHOOSE AN OPPONENT</span><h2>Play a bot</h2></div>
-        <span class="eyebrow">All games run in your browser</span>
-      </div>
-      <div class="panel-body">
-        <div class="bot-grid" id="bot-grid">
-          <button class="bot-card selected" type="button" data-bot="milo" aria-pressed="true">
-            <span class="bot-card-top"><span class="bot-avatar">MI</span><span class="bot-rating">About 600</span></span>
-            <span class="bot-name">Milo</span>
-            <span class="bot-style">New to chess. Likes simple moves and misses some threats.</span>
-          </button>
-          <button class="bot-card" type="button" data-bot="casey" aria-pressed="false">
-            <span class="bot-card-top"><span class="bot-avatar">CA</span><span class="bot-rating">About 900</span></span>
-            <span class="bot-name">Casey</span>
-            <span class="bot-style">Steady and careful. Develops pieces before attacking.</span>
-          </button>
-          <button class="bot-card" type="button" data-bot="nelson" aria-pressed="false">
-            <span class="bot-card-top"><span class="bot-avatar">NE</span><span class="bot-rating">About 1,200</span></span>
-            <span class="bot-name">Nelson</span>
-            <span class="bot-style">Loves early queen attacks and putting pressure on your king.</span>
-          </button>
-          <button class="bot-card" type="button" data-bot="iris" aria-pressed="false">
-            <span class="bot-card-top"><span class="bot-avatar">IR</span><span class="bot-rating">About 1,500</span></span>
-            <span class="bot-name">Iris</span>
-            <span class="bot-style">Patient and positional. Tries to improve every piece.</span>
-          </button>
-          <button class="bot-card" type="button" data-bot="victor" aria-pressed="false">
-            <span class="bot-card-top"><span class="bot-avatar">VI</span><span class="bot-rating">About 1,800</span></span>
-            <span class="bot-name">Victor</span>
-            <span class="bot-style">Strong and tactical. Looks for checks, captures and loose pieces.</span>
-          </button>
-          <button class="bot-card" type="button" data-bot="theo" aria-pressed="false">
-            <span class="bot-card-top"><span class="bot-avatar">TH</span><span class="bot-rating">About 1,100</span></span>
-            <span class="bot-name">Theo</span>
-            <span class="bot-style">Likes closed positions, solid pawn structures and slow plans.</span>
-          </button>
-          <button class="bot-card" type="button" data-bot="sofia" aria-pressed="false">
-            <span class="bot-card-top"><span class="bot-avatar">SO</span><span class="bot-rating">About 2,000</span></span>
-            <span class="bot-name">Sofia</span>
-            <span class="bot-style">The strongest opponent. Accurate, patient and hard to surprise.</span>
-          </button>
-        </div>
-        <div class="bot-lobby-bottom">
-          <div class="bot-options">
-            <div class="bot-field">
-              <label for="player-side">Play as</label>
-              <select id="player-side"><option value="w">White</option><option value="b">Black</option></select>
-            </div>
-          </div>
-          <button class="btn primary" id="start-bot-btn" type="button" data-icon="play">Start game</button>
-        </div>
-        <p class="import-message" id="bot-lobby-message">Choose an opponent and start a game. Bot ratings are rough difficulty guides.</p>
-      </div>
-    </section>
+ion>
 
     <div class="workspace" id="workspace">
       <section class="main-column">
@@ -366,7 +322,63 @@ ion>
           </div>
         </section>
       </aside>
-    </div>
+    </
+
+    <section class="panel bot-lobby" id="bot-lobby" hidden>
+      <div class="panel-head">
+        <div class="panel-title"><span class="eyebrow">CHOOSE AN OPPONENT</span><h2>Play a bot</h2></div>
+        <span class="eyebrow">All games run in your browser</span>
+      </div>
+      <div class="panel-body">
+        <div class="bot-grid" id="bot-grid">
+          <button class="bot-card selected" type="button" data-bot="milo" aria-pressed="true">
+            <span class="bot-card-top"><span class="bot-avatar">MI</span><span class="bot-rating">About 600</span></span>
+            <span class="bot-name">Milo</span>
+            <span class="bot-style">New to chess. Likes simple moves and misses some threats.</span>
+          </button>
+          <button class="bot-card" type="button" data-bot="casey" aria-pressed="false">
+            <span class="bot-card-top"><span class="bot-avatar">CA</span><span class="bot-rating">About 900</span></span>
+            <span class="bot-name">Casey</span>
+            <span class="bot-style">Steady and careful. Develops pieces before attacking.</span>
+          </button>
+          <button class="bot-card" type="button" data-bot="nelson" aria-pressed="false">
+            <span class="bot-card-top"><span class="bot-avatar">NE</span><span class="bot-rating">About 1,200</span></span>
+            <span class="bot-name">Nelson</span>
+            <span class="bot-style">Loves early queen attacks and putting pressure on your king.</span>
+          </button>
+          <button class="bot-card" type="button" data-bot="iris" aria-pressed="false">
+            <span class="bot-card-top"><span class="bot-avatar">IR</span><span class="bot-rating">About 1,500</span></span>
+            <span class="bot-name">Iris</span>
+            <span class="bot-style">Patient and positional. Tries to improve every piece.</span>
+          </button>
+          <button class="bot-card" type="button" data-bot="victor" aria-pressed="false">
+            <span class="bot-card-top"><span class="bot-avatar">VI</span><span class="bot-rating">About 1,800</span></span>
+            <span class="bot-name">Victor</span>
+            <span class="bot-style">Strong and tactical. Looks for checks, captures and loose pieces.</span>
+          </button>
+          <button class="bot-card" type="button" data-bot="theo" aria-pressed="false">
+            <span class="bot-card-top"><span class="bot-avatar">TH</span><span class="bot-rating">About 1,100</span></span>
+            <span class="bot-name">Theo</span>
+            <span class="bot-style">Likes closed positions, solid pawn structures and slow plans.</span>
+          </button>
+          <button class="bot-card" type="button" data-bot="sofia" aria-pressed="false">
+            <span class="bot-card-top"><span class="bot-avatar">SO</span><span class="bot-rating">About 2,000</span></span>
+            <span class="bot-name">Sofia</span>
+            <span class="bot-style">The strongest opponent. Accurate, patient and hard to surprise.</span>
+          </button>
+        </div>
+        <div class="bot-lobby-bottom">
+          <div class="bot-options">
+            <div class="bot-field">
+              <label for="player-side">Play as</label>
+              <select id="player-side"><option value="w">White</option><option value="b">Black</option></select>
+            </div>
+          </div>
+          <button class="btn primary" id="start-bot-btn" type="button" data-icon="play">Start game</button>
+        </div>
+        <p class="import-message" id="bot-lobby-message">Choose an opponent and start a game. Bot ratings are rough difficulty guides.</p>
+      </div>
+    </sectdiv>
 
     <section class="panel import-panel" id="review-import">
       <div class="panel-head">
@@ -1680,7 +1692,11 @@ ion>
         markDailyPuzzleSolved();
       } else {
         setDailyPuzzleMessage("Good move. Your opponent is replying.", "success");
-        window.setTimeout(playPuzzleReply, 430);
+        const replySession = puzzleSession;
+        const replyIndex = puzzleSession.index;
+        window.setTimeout(() => {
+          if (puzzleSession === replySession && puzzleSession.index === replyIndex && !puzzleSession.solved) playPuzzleReply();
+        }, 430);
       }
       return true;
     }
@@ -2330,7 +2346,7 @@ ion>
       const root=$("board"); if(!root)return;
       root.replaceChildren(); root.classList.add("aca-board"); root.setAttribute("role","grid"); root.setAttribute("aria-label","Interactive chess board");
       let orientation="white"; const squaresLayer=document.createElement("div"); squaresLayer.className="aca-board-squares";
-      const piecesLayer=document.createElement("div"); piecesLayer.className="aca-board-pieces"; piecesLayer.setAttribute("aria-hidden","true"); root.append(squaresLayer,piecesLayer);
+      const piecesLayer=document.createElement("div"); piecesLayer.className="aca-board-pieces"; piecesLayer.setAttribute("aria-hidden","true"); const markersLayer=document.createElement("div"); markersLayer.className="aca-board-markers"; markersLayer.setAttribute("aria-hidden","true"); root.append(squaresLayer,piecesLayer,markersLayer);
       function coordinates(square){const file=square.charCodeAt(0)-97,rank=Number(square[1])-1;return{x:orientation==="white"?file:7-file,y:orientation==="white"?7-rank:rank};}
       function transformForSquare(square,dx=0,dy=0){const p=coordinates(square);return `translate3d(calc(${p.x*100}% + ${dx}px), calc(${p.y*100}% + ${dy}px), 0)`;}
       function buildSquares(){
