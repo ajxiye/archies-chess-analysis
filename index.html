@@ -11,6 +11,8 @@
       try {
         const saved = localStorage.getItem("aca-theme");
         document.documentElement.dataset.theme = saved || "dark";
+        const route = location.hash.replace(/^#\/?/, "").split(/[?]/)[0];
+        document.documentElement.dataset.page = ["home", "analysis", "play", "settings"].includes(route) ? route : "home";
       } catch (_) {
         document.documentElement.dataset.theme = "dark";
       }
@@ -394,6 +396,50 @@ tbody tr.current-row { background: var(--accent-soft); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
 
 .board-wrap { width:min(100%,760px); }
+
+.page-nav{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:0 0 18px;padding:4px;border:1px solid var(--border);border-radius:8px;background:var(--panel-soft);width:fit-content}
+.page-nav a{display:inline-flex;align-items:center;min-height:34px;padding:7px 13px;border:1px solid transparent;border-radius:5px;color:var(--muted);text-decoration:none;font-size:11px;font-weight:650;transition:background-color .15s ease,color .15s ease,border-color .15s ease}
+.page-nav a:hover{color:var(--text);background:var(--panel-muted)}
+.page-nav a[aria-current="page"]{color:var(--text);background:var(--panel-raised);border-color:var(--border-strong)}
+.legacy-mode-controls{display:none!important}
+.home-page,.settings-page{display:none}
+.home-page{gap:18px}
+.home-welcome{padding:24px 2px 5px}
+.home-welcome h2{margin:8px 0 7px;color:var(--text);font-size:clamp(25px,4vw,34px);font-weight:650;letter-spacing:-1px;line-height:1.15}
+.home-welcome p{max-width:600px;margin:0;color:var(--muted);font-size:13px;line-height:1.6}
+.home-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.home-card{display:flex;flex-direction:column;align-items:flex-start;min-height:190px;padding:20px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);text-align:left;text-decoration:none;box-shadow:var(--shadow);transition:transform .16s ease,border-color .16s ease,background-color .16s ease}
+.home-card:hover{transform:translateY(-2px);border-color:var(--border-strong);background:var(--panel-raised)}
+.home-card-number{color:var(--accent);font-size:10px;font-weight:700;letter-spacing:1px}
+.home-card h3{margin:18px 0 7px;font-size:17px;font-weight:650}
+.home-card p{max-width:380px;margin:0;color:var(--muted);font-size:12px;line-height:1.55}
+.home-card-action{margin-top:auto;padding-top:18px;color:var(--accent);font-size:11px;font-weight:650}
+.home-note{padding:15px 17px;border:1px solid var(--border);border-radius:8px;background:var(--panel-soft);color:var(--muted);font-size:11px;line-height:1.55}
+.settings-page{max-width:760px}
+.settings-intro{margin:0 0 17px;color:var(--muted);font-size:12px;line-height:1.55}
+.settings-group{margin:0 0 14px;padding:17px;border:1px solid var(--border);border-radius:9px;background:var(--panel)}
+.settings-group h3{margin:0 0 4px;color:var(--text);font-size:13px;font-weight:650}
+.settings-group>p{margin:0 0 11px;color:var(--muted);font-size:10px;line-height:1.5}
+.settings-field{display:grid;grid-template-columns:1fr 170px;align-items:center;gap:15px;padding:12px 0;border-bottom:1px solid var(--border)}
+.settings-field:last-child{border-bottom:0}
+.settings-field label{color:var(--text-soft);font-size:11px;font-weight:600}
+.settings-field select{width:100%}
+.settings-field .btn{justify-self:start}
+.settings-title{margin:5px 0 7px;color:var(--text);font-size:24px;letter-spacing:-.5px}
+html[data-page="home"] #home-page{display:grid}
+html[data-page="home"] #review-import,html[data-page="home"] #bot-lobby,html[data-page="home"] #workspace,html[data-page="home"] #review-panel,html[data-page="home"] #settings-page{display:none!important}
+html[data-page="analysis"] #home-page,html[data-page="analysis"] #settings-page,html[data-page="analysis"] #bot-lobby,html[data-page="analysis"] #bot-chat-panel{display:none!important}
+html[data-page="analysis"] #review-import,html[data-page="analysis"] #review-panel{display:block}
+html[data-page="analysis"] #workspace{display:grid}
+html[data-page="play"] #home-page,html[data-page="play"] #settings-page,html[data-page="play"] #review-import,html[data-page="play"] #review-panel,html[data-page="play"] .engine-panel,html[data-page="play"] .overview-panel{display:none!important}
+html[data-page="play"] #workspace{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr)}
+html[data-page="play"]:not([data-playing="true"]) #workspace{display:none!important}
+html[data-page="play"] .side-column{grid-template-columns:1fr}
+html[data-page="settings"] #home-page,html[data-page="settings"] #review-import,html[data-page="settings"] #bot-lobby,html[data-page="settings"] #workspace,html[data-page="settings"] #review-panel{display:none!important}
+html[data-page="settings"] #settings-page{display:block}
+@media(max-width:760px){.page-nav{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}.page-nav a{justify-content:center;padding:7px 8px}.home-cards{grid-template-columns:1fr}.home-card{min-height:155px}html[data-page="play"] #workspace{grid-template-columns:1fr}}
+@media(max-width:520px){.settings-field{grid-template-columns:1fr 135px;gap:9px}.home-welcome{padding-top:12px}}
+
 </style>
 </head>
 <body>
@@ -409,17 +455,60 @@ tbody tr.current-row { background: var(--accent-soft); }
       <div class="topbar-actions">
         <div class="privacy-pill"><span class="privacy-dot"></span> Games stay on your device</div>
         <button class="utility-btn" id="shortcuts-btn" type="button">Shortcuts</button>
-        <button class="utility-btn" id="settings-btn" type="button">Settings</button>
+        
         <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light mode" aria-pressed="true">Light mode</button>
       </div>
     </header>
 
-    <nav class="mode-tabs" aria-label="Choose what to do">
-      <button class="mode-tab active" id="mode-review-btn" type="button" aria-pressed="true">Review a game</button>
-      <button class="mode-tab" id="mode-bots-btn" type="button" aria-pressed="false">Play a bot</button>
+    <nav class="page-nav" id="page-nav" aria-label="Main navigation">
+      <a href="#/home" data-page-link="home">Home</a>
+      <a href="#/analysis" data-page-link="analysis">Analysis</a>
+      <a href="#/play" data-page-link="play">Play</a>
+      <a href="#/settings" id="settings-btn" data-page-link="settings">Settings</a>
     </nav>
+    <div class="legacy-mode-controls" aria-hidden="true">
+      <button id="mode-review-btn" type="button">Review</button>
+      <button id="mode-bots-btn" type="button">Play</button>
+    </div>
 
-    <section class="panel import-panel" id="review-import">
+    <section class="home-page" id="home-page" aria-labelledby="home-heading">
+      <div class="home-welcome">
+        <span class="eyebrow">ARCHIE'S CHESS ANALYSIS</span>
+        <h2 id="home-heading">What would you like to do?</h2>
+        <p>Choose a page to get started. Your games and engine analysis stay in your browser.</p>
+      </div>
+      <div class="home-cards">
+        <a class="home-card" href="#/analysis" data-page-link="analysis">
+          <span class="home-card-number">01 / REVIEW</span>
+          <h3>Analyse a game</h3>
+          <p>Load a PGN, step through the moves and use Stockfish to review the game.</p>
+          <span class="home-card-action">Open analysis</span>
+        </a>
+        <a class="home-card" href="#/play" data-page-link="play">
+          <span class="home-card-number">02 / PLAY</span>
+          <h3>Play a computer opponent</h3>
+          <p>Choose an opponent, set your colour and play a game on the chessboard.</p>
+          <span class="home-card-action">Choose an opponent</span>
+        </a>
+      </div>
+      <div class="home-note">The app runs in your browser. No account is needed, and games are not uploaded to a server.</div>
+    </section>
+    <section class="settings-page" id="settings-page" aria-labelledby="settings-heading">
+      <span class="eyebrow">PREFERENCES</span>
+      <h2 class="settings-title" id="settings-heading">Settings</h2>
+      <p class="settings-intro">Adjust the appearance and controls. Your choices are saved on this device.</p>
+      <div class="settings-group">
+        <h3>Appearance</h3><p>Choose the colours and board size you prefer.</p>
+        <div class="settings-field"><label for="accent-select">Accent colour</label><select id="accent-select"><option value="green">Green</option><option value="blue">Blue</option><option value="amber">Amber</option><option value="violet">Violet</option></select></div>
+        <div class="settings-field"><label for="board-size-select">Board size</label><select id="board-size-select"><option value="compact">Compact</option><option value="standard">Standard</option><option value="large">Large</option></select></div>
+        <div class="settings-field"><label for="motion-select">Animations</label><select id="motion-select"><option value="full">Full</option><option value="reduced">Reduced</option><option value="off">Off</option></select></div>
+      </div>
+      <div class="settings-group">
+        <h3>Sound</h3><p>Turn the optional move sounds on or off.</p>
+        <div class="settings-field"><label for="settings-sound-toggle">Move sounds</label><button class="btn subtle" id="settings-sound-toggle" type="button">Sound off</button></div>
+      </div>
+    </section>
+<section class="panel import-panel" id="review-import">
       <div class="panel-head">
         <div class="panel-title"><span class="eyebrow">GAME REVIEW</span><h2>Open a game</h2></div>
         <span class="eyebrow">PGN</span>
@@ -497,7 +586,7 @@ tbody tr.current-row { background: var(--accent-soft); }
       </div>
     </section>
 
-    <div class="workspace">
+    <div class="workspace" id="workspace">
       <section class="main-column">
         <section class="panel board-panel">
           <div class="board-top">
@@ -625,7 +714,7 @@ tbody tr.current-row { background: var(--accent-soft); }
       </aside>
     </div>
 
-    <section class="panel review-panel">
+    <section class="panel review-panel" id="review-panel">
       <div class="panel-head">
         <div class="panel-title"><span class="eyebrow">MOVE REVIEW</span><h2>Move-by-move review</h2></div>
         <span class="eyebrow">Engine loss and accuracy</span>
@@ -642,17 +731,6 @@ tbody tr.current-row { background: var(--accent-soft); }
     </footer>
   </main>
 
-  <div class="modal-backdrop" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-    <div class="modal">
-      <h3 id="settings-title">Settings</h3>
-      <p>Adjust the board and page to suit the way you play.</p>
-      <div class="settings-field"><label for="accent-select">Accent colour</label><select id="accent-select"><option value="green">Green</option><option value="blue">Blue</option><option value="amber">Amber</option><option value="violet">Violet</option></select></div>
-      <div class="settings-field"><label for="board-size-select">Board size</label><select id="board-size-select"><option value="compact">Compact</option><option value="standard">Standard</option><option value="large">Large</option></select></div>
-      <div class="settings-field"><label for="motion-select">Animations</label><select id="motion-select"><option value="full">Full</option><option value="reduced">Reduced</option><option value="off">Off</option></select></div>
-      <div class="settings-field"><label for="settings-sound-toggle">Move sounds</label><button class="btn subtle" id="settings-sound-toggle" type="button">Sound off</button></div>
-      <div class="modal-actions"><button class="btn primary" type="button" data-close-modal>Done</button></div>
-    </div>
-  </div>
   <div class="modal-backdrop" id="shortcuts-modal" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
     <div class="modal">
       <h3 id="shortcuts-title">Keyboard shortcuts</h3>
@@ -806,6 +884,8 @@ tbody tr.current-row { background: var(--accent-soft); }
 
     function loadGameFromPgn(pgn) {
       playMode = false;
+      delete document.documentElement.dataset.playing;
+      navigateToPage("analysis");
       botThinking = false;
       stopBotWorker();
       $("bot-chat-panel").hidden = true;
@@ -843,6 +923,7 @@ tbody tr.current-row { background: var(--accent-soft); }
 
     function newGame() {
       playMode = false;
+      delete document.documentElement.dataset.playing;
       botThinking = false;
       botProfile = null;
       stopBotWorker();
@@ -1144,6 +1225,9 @@ tbody tr.current-row { background: var(--accent-soft); }
       stopBotWorker();
       botProfile = profile;
       playMode = true;
+      document.documentElement.dataset.playing = "true";
+      $("bot-lobby").hidden = true;
+      navigateToPage("play");
       playerColor = $("player-side").value === "b" ? "b" : "w";
       startFen = START_FEN;
       moves = [];
@@ -1315,6 +1399,36 @@ tbody tr.current-row { background: var(--accent-soft); }
       window.setTimeout(() => {
         if (playMode && botProfile) addBotChat(botProfile.name, botProfile.quick[kind]);
       }, 280);
+    }
+
+    function navigateToPage(page) {
+      const valid = ["home", "analysis", "play", "settings"];
+      if (!valid.includes(page)) page = "home";
+      const nextHash = "#/" + page;
+      if (window.location.hash !== nextHash) window.location.hash = nextHash;
+      else renderPageRoute();
+    }
+
+    function renderPageRoute() {
+      const requested = window.location.hash.replace(/^#\/?/, "").split(/[?]/)[0].toLowerCase();
+      const valid = ["home", "analysis", "play", "settings"];
+      const page = valid.includes(requested) ? requested : "home";
+      document.documentElement.dataset.page = page;
+      document.querySelectorAll("[data-page-link]").forEach(link => {
+        if (link.dataset.pageLink === page) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
+      });
+      $("review-import").hidden = page !== "analysis";
+      $("bot-lobby").hidden = page !== "play" || playMode;
+      $("bot-chat-panel").hidden = page !== "play" || !playMode;
+      const titles = {home:"Home",analysis:"Analysis",play:"Play",settings:"Settings"};
+      document.title = "Archie's Chess Analysis | " + titles[page];
+      window.requestAnimationFrame(() => {
+        if (board) {
+          board.resize();
+          board.position(game.fen(), true);
+        }
+      });
     }
 
     function setPageMode(mode) {
@@ -1793,8 +1907,17 @@ tbody tr.current-row { background: var(--accent-soft); }
     initializeBoard();
     renderAll({});
 
-    $("mode-review-btn").addEventListener("click", () => setPageMode("review"));
-    $("mode-bots-btn").addEventListener("click", () => setPageMode("bots"));
+    document.querySelectorAll("[data-page-link]").forEach(link => {
+      link.addEventListener("click", event => {
+        event.preventDefault();
+        navigateToPage(link.dataset.pageLink);
+      });
+    });
+    window.addEventListener("hashchange", renderPageRoute);
+    renderPageRoute();
+
+    $("mode-review-btn").addEventListener("click", () => navigateToPage("analysis"));
+    $("mode-bots-btn").addEventListener("click", () => navigateToPage("play"));
     $("bot-grid").querySelectorAll("[data-bot]").forEach(card => {
       card.addEventListener("click", () => {
         $("bot-grid").querySelectorAll("[data-bot]").forEach(item => {
@@ -1811,8 +1934,11 @@ tbody tr.current-row { background: var(--accent-soft); }
     $("end-bot-btn").addEventListener("click", () => {
       stopBotWorker();
       playMode = false;
+      delete document.documentElement.dataset.playing;
+      $("bot-lobby").hidden = false;
       $("bot-chat-panel").hidden = true;
       $("board-status").textContent = "Match ended. You can review the moves or start another game.";
+      navigateToPage("play");
       $("turn-indicator").textContent = game.turn() === "w" ? "White to move" : "Black to move";
     });
     document.querySelectorAll("[data-chat]").forEach(button => {
@@ -1826,7 +1952,10 @@ tbody tr.current-row { background: var(--accent-soft); }
     });
     $("sound-toggle").addEventListener("click", toggleSound);
     $("settings-sound-toggle").addEventListener("click", toggleSound);
-    $("settings-btn").addEventListener("click", () => $("settings-modal").classList.add("open"));
+    $("settings-btn").addEventListener("click", event => {
+      event.preventDefault();
+      navigateToPage("settings");
+    });
     $("shortcuts-btn").addEventListener("click", () => $("shortcuts-modal").classList.add("open"));
     document.querySelectorAll("[data-close-modal]").forEach(button => {
       button.addEventListener("click", () => button.closest(".modal-backdrop").classList.remove("open"));
