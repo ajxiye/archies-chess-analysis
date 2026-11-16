@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b0e0c">
+  <meta name="theme-color" content="#161512">
   <meta name="description" content="Private, client-side chess game analysis powered by chess.js and Stockfish.">
   <title>Archie's Chess Analysis</title>
   <script>
@@ -1573,12 +1573,26 @@ ion>
       throw new Error("The puzzle moves did not match the available starting positions.");
     }
 
-    function setDailyPuzzleMessage(message, status) {
-      const element = $("daily-puzzle-message");
-      if (!element) return;
-      element.textContent = message;
-      element.dataset.status = status || "normal";
+    function setDailyPuzzleMessage(message,status){
+      const element=$("daily-puzzle-message");
+      if(!element)return;
+      const text=$("puzzle-message-text"),icon=$("puzzle-result-icon");
+      if(text)text.textContent=message;else element.textContent=message;
+      if(icon){
+        const paths={
+          success:'<path d="m5 12 4 4L19 6"/>',
+          error:'<circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/>',
+          hint:'<path d="M9 18h6m-5 4h4"/><path d="M8 14a6 6 0 1 1 8 0c-.8.7-1 1.4-1 2H9c0-.6-.2-1.3-1-2Z"/>'
+        };
+        icon.innerHTML=status&&paths[status]
+          ?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+paths[status]+'</svg>'
+          :"";
+      }
+      element.dataset.status=status||"normal";
+      element.classList.remove("aca-shake");
+      if(status==="error"){void element.offsetWidth;element.classList.add("aca-shake");}
     }
+
 
     function updateDailyPuzzleStats() {
       const stats = readPuzzleStats();
@@ -1587,31 +1601,30 @@ ion>
       $("home-puzzle-streak").textContent = stats.streak + (stats.streak === 1 ? " day" : " days");
     }
 
-    function markDailyPuzzleSolved() {
-      if (!puzzleSession || puzzleSession.solved) return;
-      puzzleSession.solved = true;
-      const today = puzzleSession.date;
-      const stats = readPuzzleStats();
-      const solvedKey = "aca-puzzle-solved-" + today;
-      let alreadySolved = false;
-      try { alreadySolved = localStorage.getItem(solvedKey) === puzzleSession.id; } catch (_) {}
-      if (!alreadySolved) {
-        const yesterday = utcDayKey(new Date(Date.now() - 86400000));
-        stats.streak = stats.lastDay === yesterday ? stats.streak + 1 : stats.lastDay === today ? stats.streak : 1;
-        stats.solved += 1;
-        stats.lastDay = today;
-        try {
-          localStorage.setItem(solvedKey, puzzleSession.id);
-          localStorage.setItem("aca-puzzle-stats", JSON.stringify(stats));
-        } catch (_) {}
+    function markDailyPuzzleSolved(){
+      if(!puzzleSession||puzzleSession.solved)return;
+      puzzleSession.solved=true;
+      if(puzzleSession.source!=="tactics"){
+        const today=puzzleSession.date,stats=readPuzzleStats(),solvedKey="aca-puzzle-solved-"+today;
+        let alreadySolved=false;
+        try{alreadySolved=localStorage.getItem(solvedKey)===puzzleSession.id;}catch(_){}
+        if(!alreadySolved){
+          const yesterday=utcDayKey(new Date(Date.now()-86400000));
+          stats.streak=stats.lastDay===yesterday?stats.streak+1:stats.lastDay===today?stats.streak:1;
+          stats.solved+=1;stats.lastDay=today;
+          try{localStorage.setItem(solvedKey,puzzleSession.id);localStorage.setItem("aca-puzzle-stats",JSON.stringify(stats));}catch(_){}
+        }
+        setDailyPuzzleMessage(alreadySolved?"Puzzle complete. Today's solve was already recorded.":"Correct. You solved today's puzzle.","success");
+        updateDailyPuzzleStats();
+      }else{
+        setDailyPuzzleMessage("Correct. Puzzle solved.","success");
       }
-      setDailyPuzzleMessage(alreadySolved ? "Puzzle complete. You have already recorded today's solve." : "Correct. You solved today's puzzle.", "success");
-      $("daily-puzzle-hint").disabled = true;
-      $("daily-puzzle-reset").disabled = false;
-      updateDailyPuzzleStats();
+      $("daily-puzzle-hint").disabled=true;
+      $("daily-puzzle-reset").disabled=false;
+      $("board-status").textContent="Puzzle solved.";
       renderHomeSummary();
-      $("board-status").textContent = "Puzzle solved.";
     }
+
 
     function playPuzzleReply() {
       if (!puzzleSession || puzzleSession.solved) return;
@@ -1626,6 +1639,7 @@ ion>
       }
       const played = game.move(reply);
       puzzleSession.index += 1;
+      $("daily-puzzle-reset").disabled = false;
       playMoveSound(Boolean(played && played.captured));
       if (board) board.position(game.fen(), true);
       if (puzzleSession.index >= puzzleSession.solution.length) {
@@ -1643,6 +1657,7 @@ ion>
       if (actual !== expected) {
         puzzleSession.mistakes += 1;
         setDailyPuzzleMessage("Not quite. Look for a stronger move and try again.", "error");
+        $("daily-puzzle-reset").disabled = false;
         return false;
       }
       const move = game.move({ from, to, ...(promotion ? { promotion } : {}) });
@@ -1651,6 +1666,7 @@ ion>
       playMoveSound(Boolean(move.captured));
       if (board) board.position(game.fen(), animateBoard);
       puzzleSession.index += 1;
+      $("daily-puzzle-reset").disabled = false;
       if (puzzleSession.index >= puzzleSession.solution.length) {
         markDailyPuzzleSolved();
       } else {
@@ -1691,7 +1707,7 @@ ion>
     async function loadDailyPuzzle(force = false) {
       if (puzzleLoading) return;
       const today = utcDayKey();
-      if (!force && puzzleSession && puzzleSession.date === today) return;
+      if (!force && puzzleSession && puzzleSession.source !== "tactics" && puzzleSession.date === today) return;
       stopBotWorker();
       stopAnalysis(false);
       puzzleLoading = true;
@@ -1789,6 +1805,72 @@ ion>
       }
     }
 
+    function setPuzzleMode(mode){
+      const next=mode==="tactics"?"tactics":"daily";
+      const changed=puzzleMode!==next;
+      puzzleMode=next;
+      document.querySelectorAll("[data-puzzle-mode]").forEach(button=>{
+        button.setAttribute("aria-pressed",String(button.dataset.puzzleMode===puzzleMode));
+      });
+      $("puzzle-panel-title").textContent=puzzleMode==="tactics"?"Tactics trainer":"Daily puzzle";
+      $("daily-puzzle-refresh").textContent=puzzleMode==="tactics"?"Next puzzle":"Refresh daily";
+      if(puzzleMode==="tactics"){
+        if(!changed&&puzzleSession&&puzzleSession.source==="tactics")return;
+        loadTacticalPuzzle(tacticalPuzzleIndex);
+      }else{
+        if(!changed&&puzzleSession&&puzzleSession.source!=="tactics"&&puzzleSession.date===utcDayKey())return;
+        loadDailyPuzzle(false);
+      }
+    }
+
+    function loadTacticalPuzzle(index){
+      const puzzle=TACTICAL_PUZZLES[index%TACTICAL_PUZZLES.length];
+      try{
+        stopBotWorker();stopAnalysis(false);
+        game=new Chess(puzzle.fen);startFen=puzzle.fen;moves=[];positions=[startFen];currentIndex=0;
+        const setup=uciToLegalMove(game,puzzle.setup);
+        if(!setup)throw new Error("Puzzle setup move is not legal.");
+        const setupResult=game.move(setup);
+        if(!setupResult)throw new Error("Puzzle setup move could not be played.");
+        const positionAfterSetup=game.fen();
+        const validation=new Chess(positionAfterSetup);
+        for(const uci of puzzle.solution){
+          const candidate=uciToLegalMove(validation,uci);
+          if(!candidate)throw new Error("Puzzle line has an illegal move: "+uci);
+          validation.move(candidate);
+        }
+        startFen=positionAfterSetup;positions=[startFen];currentIndex=0;
+        puzzleSession={
+          id:puzzle.id,source:"tactics",date:utcDayKey(),startFen:positionAfterSetup,
+          solution:puzzle.solution.slice(),index:0,solved:false,mistakes:0,hintsUsed:false,
+          rating:puzzle.rating,plays:null,themes:puzzle.themes.slice(),title:puzzle.title,description:puzzle.description
+        };
+        playMode=false;botThinking=false;puzzleSession.playerColor=game.turn();
+        boardFlipped=game.turn()==="b";
+        if(board){board.orientation(boardFlipped?"black":"white");board.position(game.fen(),true);board.resize();}
+        $("daily-puzzle-date").textContent="Puzzle "+(index+1)+" of "+TACTICAL_PUZZLES.length;
+        $("daily-puzzle-rating").textContent=String(puzzle.rating);
+        $("daily-puzzle-plays").textContent="Practice";
+        $("daily-puzzle-streak").textContent=String(readPuzzleStats().streak);
+        $("daily-puzzle-themes").textContent=puzzle.themes.join(" · ");
+        $("daily-puzzle-hint").disabled=false;
+        $("daily-puzzle-reset").disabled=true;
+        setDailyPuzzleMessage(puzzle.description,"normal");
+        $("board-status").textContent="Find the best move. You are playing "+(game.turn()==="w"?"White.":"Black.");
+        renderPositionInfo();
+      }catch(error){
+        puzzleSession=null;
+        setDailyPuzzleMessage("This training position could not be loaded. Choose Next puzzle to continue.","error");
+        $("daily-puzzle-hint").disabled=true;$("daily-puzzle-reset").disabled=true;
+        console.error("Tactical puzzle validation failed:",puzzle.id,error);
+      }
+    }
+
+    function nextTacticalPuzzle(){
+      tacticalPuzzleIndex=(tacticalPuzzleIndex+1)%TACTICAL_PUZZLES.length;
+      loadTacticalPuzzle(tacticalPuzzleIndex);
+    }
+
     function navigateToPage(page) {
       const valid = ["home", "analysis", "play", "puzzles", "library", "settings"];
       if (!valid.includes(page)) page = "home";
@@ -1800,7 +1882,7 @@ ion>
     function renderPageRoute() {
       const requested = window.location.hash.replace(/^#\/?/, "").split(/[?]/)[0].toLowerCase();
       const valid = ["home", "analysis", "play", "puzzles", "library", "settings"];
-      const page = valid.includes(requested) ? requested : "home";
+      const page = valid.includes(requested) ? requested : "analysis";
       document.documentElement.dataset.page = page;
       document.querySelectorAll("[data-page-link]").forEach(link => {
         if (link.dataset.pageLink === page) link.setAttribute("aria-current", "page");
@@ -1810,9 +1892,9 @@ ion>
       $("bot-lobby").hidden = page !== "play" || playMode;
       $("bot-chat-panel").hidden = page !== "play" || !playMode;
       $("daily-puzzle-panel").hidden = page !== "puzzles";
-      const titles = {home:"Home",analysis:"Analysis",play:"Play",puzzles:"Daily Puzzle",library:"Game Library",settings:"Settings"};
+      const titles = {home:"Home",analysis:"Analysis",play:"Play",puzzles:"Puzzles",library:"Game Library",settings:"Settings"};
       document.title = "Archie's Chess Analysis | " + titles[page];
-      if (page === "puzzles") loadDailyPuzzle(false);
+      if (page === "puzzles") setPuzzleMode(puzzleMode);
       if (page === "library") renderSavedGames();
       if (page === "home") renderHomeSummary();
       window.requestAnimationFrame(() => {
@@ -1835,7 +1917,7 @@ ion>
 
     function setBoardTheme(theme, save = true) {
       const allowed = ["green", "blue", "walnut", "slate"];
-      const selected = allowed.includes(theme) ? theme : "green";
+      const selected = allowed.includes(theme) ? theme : "slate";
       $("board-wrap").dataset.boardTheme = selected;
       $("board-theme-select").value = selected;
       if (save) {
@@ -1874,6 +1956,7 @@ ion>
         const button = $(id);
         if (button) {
           button.textContent = label;
+          button.dataset.icon = soundEnabled ? "volume-2" : "volume-x";
           button.setAttribute("aria-pressed", String(soundEnabled));
         }
       }
@@ -2422,6 +2505,7 @@ ion>
     try { soundEnabled = localStorage.getItem("aca-sound") === "on"; }
     catch (_) { soundEnabled = false; }
     updateSoundButtons();
+    if (window.ACAIcons) window.ACAIcons();
     $("download-pgn-btn").addEventListener("click", downloadCurrentPgn);
     $("save-game-btn").addEventListener("click", saveCurrentGameToLibrary);
     $("save-board-game-btn").addEventListener("click", saveCurrentGameToLibrary);
@@ -2429,13 +2513,17 @@ ion>
     $("daily-puzzle-hint").addEventListener("click", showDailyPuzzleHint);
     $("daily-puzzle-reset").addEventListener("click", resetDailyPuzzle);
     $("daily-puzzle-refresh").addEventListener("click", () => {
+      if (puzzleMode === "tactics") { nextTacticalPuzzle(); return; }
       puzzleSession = null;
       loadDailyPuzzle(true);
     });
+    document.querySelectorAll("[data-puzzle-mode]").forEach(button => {
+      button.addEventListener("click", () => setPuzzleMode(button.dataset.puzzleMode));
+    });
     try {
-      setBoardTheme(localStorage.getItem("aca-board-theme") || "green", false);
+      setBoardTheme(localStorage.getItem("aca-board-theme") || "slate", false);
     } catch (_) {
-      setBoardTheme("green", false);
+      setBoardTheme("slate", false);
     }
 
     document.addEventListener("keydown", event => {
@@ -2503,9 +2591,11 @@ ion>
         root.dataset.theme = theme;
         const dark = theme === "dark";
         button.textContent = dark ? "Light mode" : "Dark mode";
+        button.dataset.icon = dark ? "sun" : "moon";
+        if (window.ACAIcons) window.ACAIcons();
         button.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
         button.setAttribute("aria-pressed", String(dark));
-        if (themeColor) themeColor.content = dark ? "#0b0e0c" : "#eceee9";
+        if (themeColor) themeColor.content = dark ? "#161512" : "#eeede8";
         if (persist) save("aca-theme", theme);
       }
       function applyChoice(select, attribute, key, values, fallback) {
