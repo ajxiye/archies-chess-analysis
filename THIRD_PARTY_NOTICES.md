@@ -28,6 +28,17 @@ separate program and keeps its own licence.
 - Licence: MIT
 - Source and licence: https://github.com/oakmac/chessboardjs
 
+## Cburnett chess piece artwork (SVG)
+
+- Use: vector chess piece images displayed on the board
+- Artist: Colin M. L. Burnett
+- Source: https://github.com/lichess-org/lila/tree/master/public/piece/cburnett
+- Licence: GNU General Public License, version 2 or later (GPL-2.0+)
+- Upstream attribution: https://github.com/lichess-org/lila/blob/master/COPYING.md
+
+The app loads the SVG pieces from the Lichess source repository. The artwork
+retains its own licence and is separate from the MIT-licensed application code.
+
 ## jQuery 3.7.1
 
 - Use: required by chessboard.js
