@@ -198,7 +198,7 @@ select {
   border-radius: 5px; background: var(--panel-soft); color: var(--text-soft); font-size: 10px; text-align: right;
 }
 .board-wrap {
-  width: min(100%, 690px); margin: 0 auto; padding: 7px; border: 1px solid var(--border-strong);
+  width: min(100%, 760px); margin: 0 auto; padding: 7px; border: 1px solid var(--border-strong);
   border-radius: 5px; background: var(--panel-muted); box-shadow: none;
 }
 #board { width: 100%; }
@@ -1739,25 +1739,49 @@ tbody tr.current-row { background: var(--accent-soft); }
 
   <script>
     (function () {
+      const root = document.documentElement;
       const button = document.getElementById("theme-toggle");
       const themeColor = document.querySelector('meta[name="theme-color"]');
-      if (!button) return;
-      function applyTheme(theme, save) {
-        document.documentElement.dataset.theme = theme;
+      const accentSelect = document.getElementById("accent-select");
+      const boardSizeSelect = document.getElementById("board-size-select");
+      const motionSelect = document.getElementById("motion-select");
+
+      function read(key, fallback) {
+        try { return localStorage.getItem(key) || fallback; } catch (_) { return fallback; }
+      }
+      function save(key, value) {
+        try { localStorage.setItem(key, value); } catch (_) {}
+      }
+      function applyTheme(theme, persist) {
+        root.dataset.theme = theme;
         const dark = theme === "dark";
         button.textContent = dark ? "Light mode" : "Dark mode";
         button.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
         button.setAttribute("aria-pressed", String(dark));
         if (themeColor) themeColor.content = dark ? "#0b0e0c" : "#eceee9";
-        if (save) {
-          try { localStorage.setItem("aca-theme", theme); } catch (_) {}
-        }
+        if (persist) save("aca-theme", theme);
       }
-      applyTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark", false);
+      function applyChoice(select, attribute, key, values, fallback) {
+        const value = values.includes(select.value) ? select.value : fallback;
+        root.dataset[attribute] = value;
+        select.value = value;
+        save(key, value);
+      }
+
+      applyTheme(read("aca-theme", "dark"), false);
+      root.dataset.accent = read("aca-accent", "green");
+      root.dataset.boardSize = read("aca-board-size", "large");
+      root.dataset.motion = read("aca-motion", "full");
+      accentSelect.value = root.dataset.accent;
+      boardSizeSelect.value = root.dataset.boardSize;
+      motionSelect.value = root.dataset.motion;
+
       button.addEventListener("click", function () {
-        const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-        applyTheme(next, true);
+        applyTheme(root.dataset.theme === "dark" ? "light" : "dark", true);
       });
+      accentSelect.addEventListener("change", () => applyChoice(accentSelect, "accent", "aca-accent", ["green","blue","amber","violet"], "green"));
+      boardSizeSelect.addEventListener("change", () => applyChoice(boardSizeSelect, "boardSize", "aca-board-size", ["compact","standard","large"], "large"));
+      motionSelect.addEventListener("change", () => applyChoice(motionSelect, "motion", "aca-motion", ["full","reduced","off"], "full"));
     })();
   </script>
 </body>
