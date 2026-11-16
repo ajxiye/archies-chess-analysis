@@ -202,6 +202,44 @@ select {
   border-radius: 5px; background: var(--panel-muted); box-shadow: none;
 }
 #board { width: 100%; }
+
+#board .square-55d63 { position: relative; cursor: pointer; }
+#board .square-55d63.aca-selected-square::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--accent) 32%, transparent);
+  box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--accent) 88%, transparent);
+}
+#board .square-55d63.aca-legal-target::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  width: 24%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: color-mix(in srgb, #15251c 42%, transparent);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+#board .square-55d63.aca-legal-capture::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: 5%;
+  border: clamp(3px, .65vw, 6px) solid color-mix(in srgb, var(--accent) 78%, transparent);
+  border-radius: 50%;
+  background: transparent;
+  pointer-events: none;
+}
+#board .square-55d63 { -webkit-tap-highlight-color: transparent; }
+#board .piece-417db { cursor: grab; }
+#board .piece-417db:active { cursor: grabbing; }
+
 .white-1e1d7 { background-color: #e5dfd0 !important; }
 .black-3c85d { background-color: #77866d !important; }
 :root[data-theme="light"] .white-1e1d7 { background-color: #e7e1d3 !important; }
@@ -657,6 +695,8 @@ tbody tr.current-row { background: var(--accent-soft); }
     let board = null;
     let boardFlipped = false;
     let pendingPromotion = null;
+    let selectedSquare = null;
+    let selectedLegalMoves = [];
     let engineWorker = null;
     let analysisScores = [];
     let analysisRunning = false;
@@ -823,6 +863,7 @@ tbody tr.current-row { background: var(--accent-soft); }
     }
 
     function updateGameFromCurrent() {
+      clearBoardSelection();
       moves = game.history({ verbose: true }).map(move => ({
         san: move.san, color: move.color, from: move.from, to: move.to,
         before: move.before, after: move.after
@@ -846,9 +887,10 @@ tbody tr.current-row { background: var(--accent-soft); }
     }
 
     function updatePosition(index) {
+      clearBoardSelection();
       currentIndex = Math.max(0, Math.min(moves.length, index));
       game = getPositionAt(currentIndex);
-      board.position(game.fen(), false);
+      board.position(game.fen(), true);
       renderPositionInfo();
       renderMoveList();
       renderReviewTable();
@@ -857,8 +899,9 @@ tbody tr.current-row { background: var(--accent-soft); }
     }
 
     function renderAll(headers = {}) {
+      clearBoardSelection();
       game = getPositionAt(currentIndex);
-      if (board) board.position(game.fen(), false);
+      if (board) board.position(game.fen(), true);
       const white = safeName(headers.White, "White");
       const black = safeName(headers.Black, "Black");
       $("white-name").textContent = white;
@@ -1545,30 +1588,134 @@ tbody tr.current-row { background: var(--accent-soft); }
       $("promotion-modal").classList.remove("open");
     }
 
+    function canHumanMoveOnBoard() {
+      return currentIndex === moves.length &&
+        !game.isGameOver() &&
+        !botThinking &&
+        (!playMode || game.turn() === playerColor);
+    }
+
+    function clearBoardSelection() {
+      selectedSquare = null;
+      selectedLegalMoves = [];
+      const boardElement = $("board");
+      if (boardElement) {
+        boardElement.querySelectorAll(".aca-selected-square, .aca-legal-target, .aca-legal-capture")
+          .forEach(square => square.classList.remove("aca-selected-square", "aca-legal-target", "aca-legal-capture"));
+      }
+    }
+
+    function paintBoardSelection() {
+      const boardElement = $("board");
+      if (!boardElement) return;
+      boardElement.querySelectorAll(".aca-selected-square, .aca-legal-target, .aca-legal-capture")
+        .forEach(square => square.classList.remove("aca-selected-square", "aca-legal-target", "aca-legal-capture"));
+      if (!selectedSquare) return;
+
+      const source = boardElement.querySelector('[data-square="' + selectedSquare + '"]');
+      if (source) source.classList.add("aca-selected-square");
+
+      const destinations = new Map();
+      for (const move of selectedLegalMoves) {
+        const previous = destinations.get(move.to);
+        const isCapture = Boolean(move.captured);
+        destinations.set(move.to, isCapture || previous === "capture" ? "capture" : "quiet");
+      }
+      for (const [squareName, kind] of destinations) {
+        const square = boardElement.querySelector('[data-square="' + squareName + '"]');
+        if (square) square.classList.add(kind === "capture" ? "aca-legal-capture" : "aca-legal-target");
+      }
+    }
+
+    function selectBoardSquare(squareName) {
+      const piece = game.get(squareName);
+      if (!piece || piece.color !== game.turn()) {
+        clearBoardSelection();
+        return;
+      }
+      const legalMoves = game.moves({ square: squareName, verbose: true });
+      if (!legalMoves.length) {
+        clearBoardSelection();
+        return;
+      }
+      selectedSquare = squareName;
+      selectedLegalMoves = legalMoves;
+      paintBoardSelection();
+    }
+
+    function playMoveFromBoard(from, to, promotion) {
+      if (!canHumanMoveOnBoard()) return false;
+      try {
+        const move = game.move({ from, to, ...(promotion ? { promotion } : {}) });
+        if (!move) return false;
+        clearBoardSelection();
+        afterHumanMove();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function handleBoardSquareClick(event) {
+      const target = event.target.closest("[data-square]");
+      const boardElement = $("board");
+      if (!target || !boardElement.contains(target) || !canHumanMoveOnBoard()) return;
+
+      const squareName = target.getAttribute("data-square");
+      if (!/^[a-h][1-8]$/.test(squareName)) return;
+      const piece = game.get(squareName);
+
+      if (!selectedSquare) {
+        if (piece && piece.color === game.turn()) selectBoardSquare(squareName);
+        return;
+      }
+
+      if (squareName === selectedSquare) {
+        clearBoardSelection();
+        return;
+      }
+
+      const matchingMoves = selectedLegalMoves.filter(move => move.to === squareName);
+      if (matchingMoves.length) {
+        const promotionMoves = matchingMoves.filter(move => move.promotion);
+        if (promotionMoves.length) {
+          pendingPromotion = { from: selectedSquare, to: squareName };
+          clearBoardSelection();
+          openPromotionModal(selectedSquare, squareName);
+          return;
+        }
+        const from = selectedSquare;
+        clearBoardSelection();
+        playMoveFromBoard(from, squareName);
+        return;
+      }
+
+      if (piece && piece.color === game.turn()) {
+        selectBoardSquare(squareName);
+      } else {
+        clearBoardSelection();
+      }
+    }
+
     function afterHumanMove() {
       pendingPromotion = null;
       closePromotionModal();
       const lastMove = game.history({ verbose: true }).slice(-1)[0];
       playMoveSound(Boolean(lastMove && lastMove.captured));
       updateGameFromCurrent();
-      board.position(game.fen(), false);
     }
 
     function tryBoardMove(source, target, piece) {
-      if (currentIndex !== moves.length || game.isGameOver() || botThinking || (playMode && game.turn() !== playerColor)) return "snapback";
+      if (!canHumanMoveOnBoard()) return "snapback";
       const isPawn = piece.toLowerCase().endsWith("p");
       const isPromotion = isPawn && (target[1] === "1" || target[1] === "8");
       if (isPromotion) {
+        clearBoardSelection();
+        pendingPromotion = { from: source, to: target };
         openPromotionModal(source, target);
         return "snapback";
       }
-      try {
-        const result = game.move({ from: source, to: target });
-        if (!result) return "snapback";
-        afterHumanMove();
-      } catch (_) {
-        return "snapback";
-      }
+      return playMoveFromBoard(source, target) ? undefined : "snapback";
     }
 
     function initializeBoard() {
@@ -1576,6 +1723,9 @@ tbody tr.current-row { background: var(--accent-soft); }
         $("board-status").textContent = "The chessboard library did not load. Refresh the page while connected to the internet.";
         return;
       }
+      const boardElement = $("board");
+      boardElement.addEventListener("click", handleBoardSquareClick);
+
       board = window.Chessboard("board", {
         position: START_FEN,
         draggable: true,
@@ -1627,7 +1777,10 @@ tbody tr.current-row { background: var(--accent-soft); }
         const { from, to } = pendingPromotion;
         try {
           const result = game.move({ from, to, promotion: button.dataset.piece });
-          if (result) afterHumanMove();
+          if (result) {
+            clearBoardSelection();
+            afterHumanMove();
+          }
           else { pendingPromotion = null; closePromotionModal(); }
         } catch (_) {
           pendingPromotion = null;
