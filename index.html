@@ -1150,7 +1150,7 @@ tbody tr.current-row { background: var(--accent-soft); }
       if (botProfile.style === "positional") {
         const developing = within.find(candidate => {
           const move = byUci.get(candidate.uci);
-          return ["n", "b"].includes(move.piece) && move.from[1] === (game.turn() === "w" ? "8" : "1");
+          return ["n", "b"].includes(move.piece) && move.from[1] === (game.turn() === "w" ? "1" : "8");
         });
         if (developing) return developing.uci;
       }
@@ -1214,7 +1214,7 @@ tbody tr.current-row { background: var(--accent-soft); }
     }
 
     function downloadCurrentPgn() {
-      const history = game.history();
+      const history = moves.map(move => move.san);
       const headers = botGameHeaders();
       const white = headers.White || "White";
       const black = headers.Black || "Black";
