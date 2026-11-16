@@ -12,7 +12,7 @@
         const saved = localStorage.getItem("aca-theme");
         document.documentElement.dataset.theme = saved || "dark";
       } catch (_) {
-        document.documentElement.dataset.theme = "light";
+        document.documentElement.dataset.theme = "dark";
       }
     })();
   </script>
@@ -67,13 +67,13 @@
   --shadow: 0 2px 8px rgba(37, 48, 38, .045);
 }
 * { box-sizing: border-box; }
-html { min-width: 320px; background: var(--page); }
+html { min-width: 320px; background: var(--page); scroll-behavior: smooth; }
 body {
   margin: 0;
   min-height: 100vh;
   background: var(--page);
   color: var(--text);
-  transition: background-color .18s ease, color .18s ease;
+  transition: background-color .2s ease, color .2s ease;
 }
 button, textarea, select { font: inherit; }
 button { cursor: pointer; }
@@ -81,6 +81,7 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+[hidden] { display: none !important; }
 .app {
   width: min(1540px, 100%);
   margin: 0 auto;
@@ -91,192 +92,136 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 22px;
-  margin-bottom: 20px;
-  padding: 0 2px 18px;
+  margin-bottom: 18px;
+  padding: 0 2px 17px;
   border-bottom: 1px solid var(--border);
 }
 .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .brand-mark {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  border: 1px solid var(--border-strong);
-  border-radius: 9px;
-  background: var(--panel-raised);
-  color: var(--text);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 19px;
+  width: 38px; height: 38px; display: grid; place-items: center; flex: 0 0 auto;
+  border: 1px solid var(--border-strong); border-radius: 9px; background: var(--panel-raised);
+  color: var(--text); font-family: Georgia, "Times New Roman", serif; font-size: 19px;
 }
-h1 {
-  margin: 0;
-  color: var(--text);
-  font-size: clamp(20px, 2.5vw, 25px);
-  font-weight: 650;
-  letter-spacing: -.5px;
-  line-height: 1.18;
-}
+h1 { margin: 0; color: var(--text); font-size: clamp(20px, 2.5vw, 25px); font-weight: 650; letter-spacing: -.5px; line-height: 1.18; }
 .tagline { margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.4; }
 .topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 15px; }
-.privacy-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--muted);
-  font-size: 11px;
-  white-space: nowrap;
-}
+.privacy-pill { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; white-space: nowrap; }
 .privacy-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
 .theme-toggle {
-  min-height: 34px;
-  padding: 7px 11px;
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  background: var(--panel);
-  color: var(--text-soft);
-  font-size: 11px;
-  font-weight: 600;
-  transition: background-color .14s ease, border-color .14s ease;
+  min-height: 34px; padding: 7px 11px; border: 1px solid var(--border-strong); border-radius: 6px;
+  background: var(--panel); color: var(--text-soft); font-size: 11px; font-weight: 600;
+  transition: background-color .16s ease, border-color .16s ease;
 }
 .theme-toggle:hover { border-color: var(--accent); background: var(--panel-muted); }
-.panel {
-  min-width: 0;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  overflow: hidden;
+.mode-tabs { display: flex; gap: 5px; width: fit-content; margin: 0 0 14px; padding: 4px; background: var(--panel-soft); border: 1px solid var(--border); border-radius: 7px; }
+.mode-tab {
+  min-height: 33px; padding: 7px 14px; border: 1px solid transparent; border-radius: 5px;
+  background: transparent; color: var(--muted); font-size: 11px; font-weight: 650;
+  transition: background-color .16s ease, color .16s ease, border-color .16s ease;
 }
+.mode-tab:hover { color: var(--text); }
+.mode-tab.active { border-color: var(--border); background: var(--panel-raised); color: var(--text); box-shadow: var(--shadow); }
+.panel {
+  min-width: 0; background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+  animation: panel-enter .32s ease both;
+}
+@keyframes panel-enter { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 .panel-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
 }
 .panel-title { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.panel-head h2 {
-  margin: 0;
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 620;
-  letter-spacing: -.1px;
-}
+.panel-head h2 { margin: 0; color: var(--text); font-size: 14px; font-weight: 620; letter-spacing: -.1px; }
 .panel-body { padding: 15px 16px 16px; }
-.eyebrow {
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .85px;
-  font-size: 9px;
-  font-weight: 700;
-}
-.import-panel { margin-bottom: 16px; }
-.import-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(230px, .7fr);
-  gap: 16px;
-  align-items: center;
-}
+.eyebrow { color: var(--muted); text-transform: uppercase; letter-spacing: .85px; font-size: 9px; font-weight: 700; }
+.import-panel, .bot-lobby { margin-bottom: 16px; }
+.import-layout { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(230px, .7fr); gap: 16px; align-items: center; }
 .form-label { display: block; margin: 0 0 7px; color: var(--text-soft); font-size: 11px; font-weight: 600; }
 textarea {
-  display: block;
-  width: 100%;
-  min-height: 76px;
-  resize: vertical;
-  color: var(--text);
-  background: var(--panel-soft);
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  padding: 10px 12px;
-  line-height: 1.5;
-  font-size: 11px;
-  outline: none;
-  tab-size: 2;
+  display: block; width: 100%; min-height: 76px; resize: vertical; color: var(--text);
+  background: var(--panel-soft); border: 1px solid var(--border-strong); border-radius: 6px;
+  padding: 10px 12px; line-height: 1.5; font-size: 11px; outline: none; tab-size: 2;
 }
-textarea:focus, select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
-  outline: none;
-}
+textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent); outline: none; }
 textarea::placeholder { color: var(--muted); opacity: .85; }
+.input-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
 .import-side { display: flex; flex-direction: column; align-items: flex-start; gap: 9px; }
 .import-side p { margin: 0; max-width: 420px; color: var(--muted); font-size: 11px; line-height: 1.5; }
-.input-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
 .import-side .input-actions { margin-top: 0; }
+.import-message { min-height: 14px; margin: 0; color: var(--muted); font-size: 10px; line-height: 1.4; }
 .btn {
-  min-height: 33px;
-  padding: 7px 11px;
-  border: 1px solid var(--border-strong);
-  border-radius: 5px;
-  background: var(--panel-raised);
-  color: var(--text-soft);
-  font-size: 11px;
-  font-weight: 600;
-  transition: background-color .13s ease, border-color .13s ease, color .13s ease;
+  min-height: 33px; padding: 7px 11px; border: 1px solid var(--border-strong); border-radius: 5px;
+  background: var(--panel-raised); color: var(--text-soft); font-size: 11px; font-weight: 600;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, transform .15s ease;
 }
-.btn:hover:not(:disabled) { border-color: var(--accent); background: var(--panel-muted); transform: none; }
+.btn:hover:not(:disabled) { border-color: var(--accent); background: var(--panel-muted); transform: translateY(-1px); }
+.btn:active:not(:disabled) { transform: translateY(0); }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
 .btn.primary { border-color: var(--accent); background: var(--accent); color: #07140d; }
 :root[data-theme="light"] .btn.primary { color: #fff; }
 .btn.primary:hover:not(:disabled) { border-color: var(--accent-hover); background: var(--accent-hover); }
 .btn.subtle { background: transparent; border-color: var(--border); color: var(--muted); }
-.import-message { min-height: 14px; margin: 0; color: var(--muted); font-size: 10px; line-height: 1.4; }
-.workspace {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(340px, .85fr);
-  gap: 16px;
-  align-items: start;
+.bot-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 9px; }
+.bot-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-width: 0;
+  min-height: 142px; padding: 12px; border: 1px solid var(--border); border-radius: 7px;
+  background: var(--panel-soft); color: var(--text); text-align: left;
+  transition: border-color .16s ease, background-color .16s ease, transform .16s ease;
 }
+.bot-card:hover { border-color: var(--border-strong); background: var(--panel-muted); transform: translateY(-2px); }
+.bot-card.selected { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.bot-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
+.bot-avatar {
+  width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid var(--border-strong);
+  border-radius: 50%; background: var(--panel-raised); color: var(--text); font-size: 11px; font-weight: 700;
+}
+.bot-rating { color: var(--muted); font-size: 9px; font-variant-numeric: tabular-nums; }
+.bot-name { color: var(--text); font-size: 12px; font-weight: 650; }
+.bot-style { color: var(--muted); font-size: 10px; line-height: 1.45; }
+.bot-lobby-bottom { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 14px; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border); }
+.bot-options { display: flex; flex-wrap: wrap; align-items: end; gap: 11px; }
+.bot-field { display: flex; flex-direction: column; gap: 5px; }
+.bot-field label { color: var(--muted); font-size: 10px; }
+select {
+  min-height: 32px; color: var(--text); background: var(--panel-soft);
+  border: 1px solid var(--border-strong); border-radius: 5px; padding: 6px 9px; font-size: 10px;
+}
+.workspace { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(340px, .85fr); gap: 16px; align-items: start; }
 .main-column, .side-column { display: grid; gap: 16px; min-width: 0; }
 .board-panel { padding: 15px; }
-.board-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 13px;
-  padding: 0 2px;
-}
-.board-top h2 { margin: 0; color: var(--text); font-size: 14px; font-weight: 620; }
+.board-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 13px; padding: 0 2px; }
 .board-heading { display: flex; flex-direction: column; gap: 4px; }
+.board-top h2 { margin: 0; color: var(--text); font-size: 14px; font-weight: 620; }
 .turn-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  background: var(--panel-soft);
-  color: var(--text-soft);
-  font-size: 10px;
-  text-align: right;
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border: 1px solid var(--border);
+  border-radius: 5px; background: var(--panel-soft); color: var(--text-soft); font-size: 10px; text-align: right;
 }
 .board-wrap {
-  width: min(100%, 690px);
-  margin: 0 auto;
-  padding: 7px;
-  border: 1px solid var(--border-strong);
-  border-radius: 5px;
-  background: var(--panel-muted);
-  box-shadow: none;
+  width: min(100%, 690px); margin: 0 auto; padding: 7px; border: 1px solid var(--border-strong);
+  border-radius: 5px; background: var(--panel-muted); box-shadow: none;
 }
 #board { width: 100%; }
 .white-1e1d7 { background-color: #e5dfd0 !important; }
 .black-3c85d { background-color: #77866d !important; }
 :root[data-theme="light"] .white-1e1d7 { background-color: #e7e1d3 !important; }
 :root[data-theme="light"] .black-3c85d { background-color: #85947a !important; }
-.board-footer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 13px;
-}
+#board-wrap[data-board-theme="blue"] .white-1e1d7 { background-color: #dce5e7 !important; }
+#board-wrap[data-board-theme="blue"] .black-3c85d { background-color: #718b96 !important; }
+#board-wrap[data-board-theme="walnut"] .white-1e1d7 { background-color: #e9d8be !important; }
+#board-wrap[data-board-theme="walnut"] .black-3c85d { background-color: #a47b57 !important; }
+#board-wrap[data-board-theme="slate"] .white-1e1d7 { background-color: #d5d9dc !important; }
+#board-wrap[data-board-theme="slate"] .black-3c85d { background-color: #78838c !important; }
+.board-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
 .board-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.board-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.board-tools label { color: var(--muted); font-size: 10px; }
 .board-status { color: var(--muted); font-size: 10px; line-height: 1.5; text-align: right; }
+.shortcut-hint { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--border); color: var(--muted); font-size: 9px; line-height: 1.5; }
+kbd {
+  display: inline-block; min-width: 19px; margin: 0 2px; padding: 2px 5px; border: 1px solid var(--border-strong);
+  border-radius: 3px; background: var(--panel-soft); color: var(--text-soft); font: inherit; text-align: center;
+}
 .side-column .panel-body { padding: 14px; }
 .engine-topline { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 .engine-label { display: flex; flex-direction: column; gap: 3px; }
@@ -284,136 +229,54 @@ textarea::placeholder { color: var(--muted); opacity: .85; }
 .engine-label span { color: var(--muted); font-size: 10px; }
 .depth-control { display: flex; align-items: center; gap: 7px; }
 .depth-control label { color: var(--muted); font-size: 10px; }
-select {
-  color: var(--text);
-  background: var(--panel-soft);
-  border: 1px solid var(--border-strong);
-  border-radius: 5px;
-  padding: 7px 9px;
-  font-size: 10px;
-}
 .engine-buttons { display: flex; gap: 7px; margin-top: 12px; }
-.engine-progress {
-  height: 4px;
-  margin-top: 14px;
-  overflow: hidden;
-  border-radius: 4px;
-  background: var(--panel-muted);
-}
-.engine-progress > div { width: 0%; height: 100%; background: var(--accent); transition: width .2s ease; }
-.engine-status {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 7px;
-  color: var(--muted);
-  font-size: 10px;
-}
+.engine-progress { height: 4px; margin-top: 14px; overflow: hidden; border-radius: 4px; background: var(--panel-muted); }
+.engine-progress > div { width: 0%; height: 100%; background: var(--accent); transition: width .25s ease; }
+.engine-status { display: flex; justify-content: space-between; gap: 10px; margin-top: 7px; color: var(--muted); font-size: 10px; }
 .evaluation {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 13px;
-  padding: 13px 14px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--panel-soft);
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 13px;
+  padding: 13px 14px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-soft);
 }
 .evaluation-copy { min-width: 0; }
-.evaluation .score {
-  margin-top: 5px;
-  color: var(--text);
-  font-size: 27px;
-  line-height: 1;
-  font-weight: 650;
-  letter-spacing: -.7px;
-  font-variant-numeric: tabular-nums;
-}
+.evaluation .score { margin-top: 5px; color: var(--text); font-size: 27px; line-height: 1; font-weight: 650; letter-spacing: -.7px; font-variant-numeric: tabular-nums; }
 .evaluation small { display: block; margin-top: 6px; color: var(--muted); font-size: 9px; }
 .score-side { padding-bottom: 2px; color: var(--accent); font-size: 9px; font-weight: 700; letter-spacing: .5px; }
 .game-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
-.meta-chip {
-  background: var(--panel-soft);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 5px 7px;
-  color: var(--text-soft);
-  font-size: 10px;
-}
+.meta-chip { background: var(--panel-soft); border: 1px solid var(--border); border-radius: 4px; padding: 5px 7px; color: var(--text-soft); font-size: 10px; }
 .stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
-.stat-card {
-  min-width: 0;
-  padding: 11px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--panel-soft);
-}
-.stat-card .name {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  color: var(--text-soft);
-  font-size: 10px;
-  font-weight: 600;
-}
-.stat-card .value {
-  margin-top: 7px;
-  color: var(--text);
-  font-size: 21px;
-  font-weight: 650;
-  letter-spacing: -.4px;
-  font-variant-numeric: tabular-nums;
-}
+.stat-card { min-width: 0; padding: 11px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-soft); }
+.stat-card .name { display: flex; justify-content: space-between; gap: 8px; color: var(--text-soft); font-size: 10px; font-weight: 600; }
+.stat-card .value { margin-top: 7px; color: var(--text); font-size: 21px; font-weight: 650; letter-spacing: -.4px; font-variant-numeric: tabular-nums; }
 .stat-card .sub { margin-top: 3px; color: var(--muted); font-size: 9px; line-height: 1.4; }
 .summary-note { margin: 10px 0 0; color: var(--muted); font-size: 9px; line-height: 1.5; }
-.move-list {
-  max-height: 280px;
-  overflow: auto;
-  padding: 7px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--panel-soft);
-}
+.move-list { max-height: 280px; overflow: auto; padding: 7px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-soft); }
 .move-pair { display: grid; grid-template-columns: 32px 1fr 1fr; gap: 4px; align-items: center; margin-bottom: 2px; }
 .move-pair:last-child { margin-bottom: 0; }
-.move-number {
-  color: var(--muted);
-  text-align: right;
-  padding-right: 4px;
-  font-size: 10px;
-  font-variant-numeric: tabular-nums;
-}
+.move-number { color: var(--muted); text-align: right; padding-right: 4px; font-size: 10px; font-variant-numeric: tabular-nums; }
 .move-cell {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  min-width: 0;
-  gap: 5px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  padding: 5px 6px;
-  color: var(--text-soft);
-  background: transparent;
-  text-align: left;
-  font-size: 11px;
+  display: flex; justify-content: space-between; align-items: center; min-width: 0; gap: 5px;
+  border: 1px solid transparent; border-radius: 4px; padding: 5px 6px; color: var(--text-soft);
+  background: transparent; text-align: left; font-size: 11px;
 }
 .move-cell:hover { background: var(--panel-muted); }
 .move-cell.active { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 38%, var(--border)); color: var(--text); }
 .move-cell:disabled { cursor: default; opacity: .35; }
 .move-cell .grade { color: var(--muted); font-size: 9px; white-space: nowrap; }
+.bot-chat { display: flex; flex-direction: column; gap: 10px; }
+.bot-chat-lines {
+  display: flex; flex-direction: column; gap: 8px; max-height: 190px; min-height: 100px; overflow: auto;
+  padding: 9px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-soft);
+}
+.chat-message { max-width: 92%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel); color: var(--text-soft); font-size: 10px; line-height: 1.45; animation: message-in .18s ease both; }
+.chat-message.you { align-self: flex-end; border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); background: var(--accent-soft); color: var(--text); }
+.chat-message strong { display: block; margin-bottom: 3px; color: var(--text); font-size: 9px; }
+@keyframes message-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.quick-chat { display: flex; flex-wrap: wrap; gap: 6px; }
+.quick-chat .btn { min-height: 28px; padding: 5px 8px; font-size: 10px; }
 .review-panel { margin-top: 16px; }
 .review-table-wrap { max-height: 420px; overflow: auto; border: 1px solid var(--border); border-radius: 6px; }
 table { width: 100%; border-collapse: collapse; font-size: 11px; }
-th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--panel-muted);
-  color: var(--text-soft);
-  text-align: left;
-  font-weight: 650;
-}
+th { position: sticky; top: 0; z-index: 1; background: var(--panel-muted); color: var(--text-soft); text-align: left; font-weight: 650; }
 th, td { padding: 10px 11px; border-bottom: 1px solid var(--border); white-space: nowrap; }
 td { color: var(--text-soft); }
 tbody tr:last-child td { border-bottom: 0; }
@@ -423,65 +286,24 @@ tbody tr.current-row { background: var(--accent-soft); }
 .grade-inaccuracy { color: var(--gold); }
 .grade-mistake, .grade-blunder { color: var(--red); }
 .empty-state { padding: 17px 8px; color: var(--muted); text-align: center; font-size: 11px; line-height: 1.6; }
-.disclaimer {
-  margin-top: 11px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-left: 2px solid var(--accent);
-  border-radius: 4px;
-  background: var(--panel-soft);
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.55;
-}
-.footer {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 17px 2px 0;
-  color: var(--muted);
-  font-size: 10px;
-}
+.disclaimer { margin-top: 11px; padding: 10px 12px; border: 1px solid var(--border); border-left: 2px solid var(--accent); border-radius: 4px; background: var(--panel-soft); color: var(--muted); font-size: 10px; line-height: 1.55; }
+.footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 17px 2px 0; color: var(--muted); font-size: 10px; }
 .footer a { color: var(--accent); text-decoration: none; }
 .footer a:hover { text-decoration: underline; }
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: none;
-  place-items: center;
-  padding: 20px;
-  background: rgba(0,0,0,.65);
-}
+.modal-backdrop { position: fixed; inset: 0; z-index: 50; display: none; place-items: center; padding: 20px; background: rgba(0,0,0,.65); }
 .modal-backdrop.open { display: grid; }
-.modal {
-  width: min(360px, 100%);
-  padding: 21px;
-  border: 1px solid var(--border-strong);
-  border-radius: 8px;
-  background: var(--panel);
-  box-shadow: 0 18px 50px rgba(0,0,0,.25);
-}
+.modal { width: min(360px, 100%); padding: 21px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--panel); box-shadow: 0 18px 50px rgba(0,0,0,.25); }
 .modal h3 { margin: 0 0 6px; color: var(--text); font-size: 16px; font-weight: 620; }
 .modal p { margin: 0 0 15px; color: var(--muted); font-size: 11px; line-height: 1.5; }
 .promotion-options { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
-.promotion-options button {
-  padding: 10px 5px;
-  border: 1px solid var(--border-strong);
-  border-radius: 5px;
-  background: var(--panel-soft);
-  color: var(--text);
-  font-size: 11px;
-}
+.promotion-options button { padding: 10px 5px; border: 1px solid var(--border-strong); border-radius: 5px; background: var(--panel-soft); color: var(--text); font-size: 11px; }
 .promotion-options button:hover { border-color: var(--accent); background: var(--accent-soft); }
-@media (max-width: 980px) {
-  .workspace { grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr); }
-}
+@media (max-width: 1100px) { .bot-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+@media (max-width: 980px) { .workspace { grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr); } }
 @media (max-width: 780px) {
   .workspace { grid-template-columns: 1fr; }
   .side-column { grid-template-columns: repeat(2, minmax(0,1fr)); align-items: start; }
-  .side-column .moves-panel { grid-column: 1 / -1; }
+  .side-column .moves-panel, .side-column .bot-chat-panel { grid-column: 1 / -1; }
 }
 @media (max-width: 560px) {
   .app { padding: 16px 10px 28px; }
@@ -489,10 +311,14 @@ tbody tr.current-row { background: var(--accent-soft); }
   .brand-mark { width: 32px; height: 32px; }
   .topbar-actions { flex-direction: column-reverse; align-items: flex-end; gap: 7px; }
   .privacy-pill { font-size: 9px; }
+  .mode-tabs { width: 100%; }
+  .mode-tab { flex: 1; }
   .import-layout { grid-template-columns: 1fr; }
-  .import-side { gap: 7px; }
+  .bot-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .bot-lobby-bottom { align-items: flex-start; flex-direction: column; }
+  .workspace { grid-template-columns: 1fr; }
   .side-column { grid-template-columns: 1fr; }
-  .side-column .moves-panel { grid-column: auto; }
+  .side-column .moves-panel, .side-column .bot-chat-panel { grid-column: auto; }
   .panel-head { padding: 12px 13px; }
   .panel-body { padding: 13px; }
   .board-panel { padding: 10px; }
@@ -501,7 +327,8 @@ tbody tr.current-row { background: var(--accent-soft); }
   .stat-card .value { font-size: 19px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition-duration: .01ms !important; }
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
 
   </style>
@@ -513,21 +340,23 @@ tbody tr.current-row { background: var(--accent-soft); }
         <div class="brand-mark" aria-hidden="true">A</div>
         <div>
           <h1>Archie's Chess Analysis</h1>
-          <div class="tagline">Review your games, check positions and follow your progress.</div>
+          <div class="tagline">Review your games or play a match against a computer opponent.</div>
         </div>
       </div>
       <div class="topbar-actions">
-        <div class="privacy-pill"><span class="privacy-dot"></span> Your games stay on your device</div>
+        <div class="privacy-pill"><span class="privacy-dot"></span> Games stay on your device</div>
         <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light mode" aria-pressed="true">Light mode</button>
       </div>
     </header>
 
-    <section class="panel import-panel" aria-labelledby="import-heading">
+    <nav class="mode-tabs" aria-label="Choose what to do">
+      <button class="mode-tab active" id="mode-review-btn" type="button" aria-pressed="true">Review a game</button>
+      <button class="mode-tab" id="mode-bots-btn" type="button" aria-pressed="false">Play a bot</button>
+    </nav>
+
+    <section class="panel import-panel" id="review-import">
       <div class="panel-head">
-        <div class="panel-title">
-          <span class="eyebrow">01 / GAME</span>
-          <h2 id="import-heading">Open a game</h2>
-        </div>
+        <div class="panel-title"><span class="eyebrow">GAME REVIEW</span><h2>Open a game</h2></div>
         <span class="eyebrow">PGN</span>
       </div>
       <div class="panel-body import-layout">
@@ -536,7 +365,7 @@ tbody tr.current-row { background: var(--accent-soft); }
           <textarea id="pgn-input" spellcheck="false" placeholder='[Event "Casual Game"]&#10;[White "Player 1"]&#10;[Black "Player 2"]&#10;&#10;1. e4 e5 2. Nf3 Nc6 3. Bc4 ...'></textarea>
         </div>
         <div class="import-side">
-          <p>Paste one chess game here, then load it to see the moves on the board. You can also start a new game and play directly.</p>
+          <p>Load a game to step through the moves, check each position and review both players.</p>
           <div class="input-actions">
             <button class="btn primary" id="load-pgn-btn">Load game</button>
             <button class="btn" id="demo-btn">Example game</button>
@@ -547,17 +376,60 @@ tbody tr.current-row { background: var(--accent-soft); }
       </div>
     </section>
 
+    <section class="panel bot-lobby" id="bot-lobby" hidden>
+      <div class="panel-head">
+        <div class="panel-title"><span class="eyebrow">CHOOSE AN OPPONENT</span><h2>Play a bot</h2></div>
+        <span class="eyebrow">All games run in your browser</span>
+      </div>
+      <div class="panel-body">
+        <div class="bot-grid" id="bot-grid">
+          <button class="bot-card selected" type="button" data-bot="milo" aria-pressed="true">
+            <span class="bot-card-top"><span class="bot-avatar">MI</span><span class="bot-rating">About 600</span></span>
+            <span class="bot-name">Milo</span>
+            <span class="bot-style">New to chess. Likes simple moves and misses some threats.</span>
+          </button>
+          <button class="bot-card" type="button" data-bot="casey" aria-pressed="false">
+            <span class="bot-card-top"><span class="bot-avatar">CA</span><span class="bot-rating">About 900</span></span>
+            <span class="bot-name">Casey</span>
+            <span class="bot-style">Steady and careful. Develops pieces before attacking.</span>
+          </button>
+          <button class="bot-card" type="button" data-bot="nelson" aria-pressed="false">
+            <span class="bot-card-top"><span class="bot-avatar">NE</span><span class="bot-rating">About 1,200</span></span>
+            <span class="bot-name">Nelson</span>
+            <span class="bot-style">Loves early queen attacks and putting pressure on your king.</span>
+          </button>
+          <button class="bot-card" type="button" data-bot="iris" aria-pressed="false">
+            <span class="bot-card-top"><span class="bot-avatar">IR</span><span class="bot-rating">About 1,500</span></span>
+            <span class="bot-name">Iris</span>
+            <span class="bot-style">Patient and positional. Tries to improve every piece.</span>
+          </button>
+          <button class="bot-card" type="button" data-bot="victor" aria-pressed="false">
+            <span class="bot-card-top"><span class="bot-avatar">VI</span><span class="bot-rating">About 1,800</span></span>
+            <span class="bot-name">Victor</span>
+            <span class="bot-style">Strong and tactical. Looks for checks, captures and loose pieces.</span>
+          </button>
+        </div>
+        <div class="bot-lobby-bottom">
+          <div class="bot-options">
+            <div class="bot-field">
+              <label for="player-side">Play as</label>
+              <select id="player-side"><option value="w">White</option><option value="b">Black</option></select>
+            </div>
+          </div>
+          <button class="btn primary" id="start-bot-btn" type="button">Start game</button>
+        </div>
+        <p class="import-message" id="bot-lobby-message">Choose an opponent and start a game. Bot ratings are rough difficulty guides.</p>
+      </div>
+    </section>
+
     <div class="workspace">
       <section class="main-column">
         <section class="panel board-panel">
           <div class="board-top">
-            <div class="board-heading">
-              <span class="eyebrow">02 / POSITION</span>
-              <h2 id="board-title">Starting position</h2>
-            </div>
+            <div class="board-heading"><span class="eyebrow">CHESSBOARD</span><h2 id="board-title">Starting position</h2></div>
             <div class="turn-indicator" id="turn-indicator">White to move</div>
           </div>
-          <div class="board-wrap"><div id="board" aria-label="Interactive chess board"></div></div>
+          <div class="board-wrap" id="board-wrap" data-board-theme="green"><div id="board" aria-label="Interactive chess board"></div></div>
           <div class="board-footer">
             <div class="board-controls">
               <button class="btn subtle" id="first-btn" title="First position" disabled>First</button>
@@ -568,31 +440,41 @@ tbody tr.current-row { background: var(--accent-soft); }
             </div>
             <div class="board-status" id="board-status">Load a PGN to begin, or play moves from the starting position.</div>
           </div>
+          <div class="shortcut-hint">
+            Keyboard shortcuts:
+            <kbd>←</kbd><kbd>→</kbd> Previous / next move
+            <kbd>Home</kbd><kbd>End</kbd> First / last position
+            <kbd>F</kbd> Flip board
+            <kbd>A</kbd> Analyse
+          </div>
+          <div class="board-tools">
+            <label for="board-theme-select">Board colours</label>
+            <select id="board-theme-select">
+              <option value="green">Green</option>
+              <option value="blue">Blue</option>
+              <option value="walnut">Walnut</option>
+              <option value="slate">Slate</option>
+            </select>
+            <button class="btn subtle" id="copy-fen-btn" type="button">Copy FEN</button>
+            <button class="btn subtle" id="download-pgn-btn" type="button">Save PGN</button>
+          </div>
         </section>
       </section>
 
       <aside class="side-column" aria-label="Game analysis">
         <section class="panel engine-panel">
           <div class="panel-head">
-            <div class="panel-title">
-              <span class="eyebrow">03 / ENGINE</span>
-              <h2>Position analysis</h2>
-            </div>
+            <div class="panel-title"><span class="eyebrow">ENGINE</span><h2>Position analysis</h2></div>
             <span class="eyebrow" id="engine-version">Stockfish 19</span>
           </div>
           <div class="panel-body">
             <div class="engine-topline">
-              <div class="engine-label">
-                <strong>Analyse the full game</strong>
-                <span>Stockfish checks each position.</span>
-              </div>
+              <div class="engine-label"><strong>Analyse the full game</strong><span>Stockfish checks each position.</span></div>
               <div class="depth-control">
                 <label for="depth-select">Depth</label>
                 <select id="depth-select" aria-label="Engine search depth">
-                  <option value="8">8 (quick)</option>
-                  <option value="10" selected>10 (normal)</option>
-                  <option value="12">12 (detailed)</option>
-                  <option value="15">15 (slow)</option>
+                  <option value="8">8 (quick)</option><option value="10" selected>10 (normal)</option>
+                  <option value="12">12 (detailed)</option><option value="15">15 (slow)</option>
                 </select>
               </div>
             </div>
@@ -615,10 +497,7 @@ tbody tr.current-row { background: var(--accent-soft); }
 
         <section class="panel overview-panel">
           <div class="panel-head">
-            <div class="panel-title">
-              <span class="eyebrow">GAME</span>
-              <h2>Game summary</h2>
-            </div>
+            <div class="panel-title"><span class="eyebrow">GAME</span><h2>Game summary</h2></div>
             <span class="eyebrow" id="move-count">0 moves</span>
           </div>
           <div class="panel-body">
@@ -641,14 +520,26 @@ tbody tr.current-row { background: var(--accent-soft); }
 
         <section class="panel moves-panel">
           <div class="panel-head">
-            <div class="panel-title">
-              <span class="eyebrow">MOVE LIST</span>
-              <h2>Moves</h2>
-            </div>
+            <div class="panel-title"><span class="eyebrow">MOVE LIST</span><h2>Moves</h2></div>
             <span class="eyebrow">Select to jump</span>
           </div>
-          <div class="panel-body">
-            <div class="move-list" id="move-list"><div class="empty-state">Your PGN moves will appear here.</div></div>
+          <div class="panel-body"><div class="move-list" id="move-list"><div class="empty-state">Your PGN moves will appear here.</div></div></div>
+        </section>
+
+        <section class="panel bot-chat-panel" id="bot-chat-panel" hidden>
+          <div class="panel-head">
+            <div class="panel-title"><span class="eyebrow">MATCH CHAT</span><h2 id="bot-chat-title">Playing against Milo</h2></div>
+            <button class="btn subtle" id="end-bot-btn" type="button">End match</button>
+          </div>
+          <div class="panel-body bot-chat">
+            <div class="bot-chat-lines" id="bot-chat-lines" role="log" aria-live="polite">
+              <div class="empty-state">Your match messages will appear here.</div>
+            </div>
+            <div class="quick-chat" aria-label="Quick messages">
+              <button class="btn" type="button" data-chat="good">Good game</button>
+              <button class="btn" type="button" data-chat="nice">Nice move</button>
+              <button class="btn" type="button" data-chat="think">I'm thinking</button>
+            </div>
           </div>
         </section>
       </aside>
@@ -656,16 +547,11 @@ tbody tr.current-row { background: var(--accent-soft); }
 
     <section class="panel review-panel">
       <div class="panel-head">
-        <div class="panel-title">
-          <span class="eyebrow">04 / RESULTS</span>
-          <h2>Move-by-move review</h2>
-        </div>
+        <div class="panel-title"><span class="eyebrow">MOVE REVIEW</span><h2>Move-by-move review</h2></div>
         <span class="eyebrow">Engine loss and accuracy</span>
       </div>
       <div class="panel-body">
-        <div class="review-table-wrap" id="review-wrap">
-          <div class="empty-state">Run Stockfish analysis to generate the move review.</div>
-        </div>
+        <div class="review-table-wrap" id="review-wrap"><div class="empty-state">Run Stockfish analysis to generate the move review.</div></div>
         <div class="disclaimer">Accuracy is an estimate based on the change in engine evaluation. The playing-strength estimate is experimental and is not an official rating.</div>
       </div>
     </section>
@@ -714,6 +600,64 @@ tbody tr.current-row { background: var(--accent-soft); }
     let analysisDepth = 10;
     let engineToken = 0;
 
+
+    let botWorker = null;
+    let botWorkerReady = false;
+    let botThinking = false;
+    let botCandidates = [];
+    let botProfile = null;
+    let playMode = false;
+    let playerColor = "w";
+    let botToken = 0;
+
+    const BOT_PROFILES = {
+      milo: {
+        id: "milo", name: "Milo", rating: 600, skill: 0, depth: 7, style: "beginner",
+        greeting: ["Hi. I'm still learning, so let's see how this goes.", "Ready when you are. I hope I remember all the rules.", "Good luck. I'm going to take my time."],
+        after: ["I wasn't expecting that move.", "Let me think. There must be something here.", "I'm trying to keep my pieces safe."],
+        capture: ["I thought that piece was hanging.", "I spotted a chance to take something.", "That looked like a free piece."],
+        check: ["Check. I hope I worked that out properly.", "Your king might need to move.", "I found a check."],
+        quick: { good: "Thanks. Good luck to you too.", nice: "Thanks. I'm still learning.", think: "Take your time. I need some too." },
+        result: { win: "That's a win for me. Good game.", lose: "You got me. I'll learn from that one.", draw: "A draw. We were pretty evenly matched." }
+      },
+      casey: {
+        id: "casey", name: "Casey", rating: 900, skill: 3, depth: 8, style: "steady",
+        greeting: ["Good to play you. I'll keep things simple and solid.", "Let's have a good game. I'll start by taking the centre.", "Ready. I usually prefer a quiet opening."],
+        after: ["That's an interesting choice.", "I'll keep my position tidy.", "No need to rush. There is plenty of time."],
+        capture: ["That trade works for me.", "I'll take that piece.", "The exchange looks useful."],
+        check: ["Check. Let's see how you respond.", "Your king is under a little pressure.", "I found a check."],
+        quick: { good: "Thanks. Let's keep it a good game.", nice: "Thanks. I thought that was a useful move.", think: "Of course. I'll use the time to check my position." },
+        result: { win: "Good game. That went well for me.", lose: "Well played. You found the better plan.", draw: "A fair result. Neither of us found a way through." }
+      },
+      nelson: {
+        id: "nelson", name: "Nelson", rating: 1200, skill: 6, depth: 9, style: "queen",
+        greeting: ["You should keep an eye on your king. I like active queens.", "Let's play. I have a few queen ideas already.", "Ready? I don't mind bringing my queen out early."],
+        after: ["You left me a little room to attack.", "I'm looking for a way to bring my queen into this.", "Careful. I like open lines."],
+        capture: ["I'll take that. The queen is never far away.", "That gives me a little more room to attack.", "One less piece to worry about."],
+        check: ["Check. Now we are getting somewhere.", "Your king has my attention.", "I thought you might miss that check."],
+        quick: { good: "Thanks. I hope you are ready for the queen.", nice: "Thank you. I do like an active attack.", think: "Take your time. My queen isn't going anywhere." },
+        result: { win: "There it is. The queen did her job.", lose: "Well played. You kept my queen out of the game.", draw: "A draw. I was hoping to make more trouble with my queen." }
+      },
+      iris: {
+        id: "iris", name: "Iris", rating: 1500, skill: 10, depth: 10, style: "positional",
+        greeting: ["Hello. I'll be looking for a good long-term position.", "Let's play. I prefer to improve my pieces one at a time.", "Good luck. I'll try to keep the position under control."],
+        after: ["I'll take a moment to improve my position.", "That changes the shape of the board.", "A useful move. I need to adjust my plan."],
+        capture: ["That exchange improves my position.", "I'll take the material when it makes sense.", "The capture fits the position."],
+        check: ["Check. Sometimes a quiet move is not an option.", "Your king has to respond to that.", "I found a forcing move."],
+        quick: { good: "Thank you. Let's keep the position interesting.", nice: "Thanks. I thought that move improved the position.", think: "Of course. Patience is part of the game." },
+        result: { win: "A good result. The small advantages added up.", lose: "Well played. Your position held together better.", draw: "A balanced game. I couldn't find a lasting advantage." }
+      },
+      victor: {
+        id: "victor", name: "Victor", rating: 1800, skill: 15, depth: 11, style: "tactical",
+        greeting: ["Let's begin. I'll be watching for tactical chances.", "Ready. Make sure every piece is protected.", "Good luck. I'll look for forcing moves."],
+        after: ["I see a few possibilities here.", "That gives the position a new tactical detail.", "I'll check the forcing moves first."],
+        capture: ["The capture was there, so I took it.", "That exchange wins material.", "I could not ignore that capture."],
+        check: ["Check. The next move matters.", "A forcing move is usually worth checking.", "Your king is in check."],
+        quick: { good: "Thank you. Back to the position.", nice: "Thanks. I had to calculate that one.", think: "Take your time. I will check the variations." },
+        result: { win: "Good game. The tactics decided it.", lose: "Well played. You calculated the position better.", draw: "A draw. The tactics did not settle it." }
+      }
+    };
+
     const DEMO_PGN = `[Event "Italian Game Sample"]\n[Site "Archie's Chess Analysis"]\n[White "White"]\n[Black "Black"]\n[Result "*"]\n\n1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 5. d4 exd4 6. cxd4 Bb4+ 7. Nc3 Nxe4`;
 
     function setImportMessage(message, isError = false) {
@@ -736,6 +680,10 @@ tbody tr.current-row { background: var(--accent-soft); }
     }
 
     function loadGameFromPgn(pgn) {
+      playMode = false;
+      botThinking = false;
+      stopBotWorker();
+      $("bot-chat-panel").hidden = true;
       const parsed = new Chess();
       parsed.loadPgn(pgn);
       const verbose = parsed.history({ verbose: true });
@@ -769,6 +717,11 @@ tbody tr.current-row { background: var(--accent-soft); }
     }
 
     function newGame() {
+      playMode = false;
+      botThinking = false;
+      botProfile = null;
+      stopBotWorker();
+      $("bot-chat-panel").hidden = true;
       stopAnalysis(false);
       startFen = START_FEN;
       moves = [];
@@ -793,8 +746,18 @@ tbody tr.current-row { background: var(--accent-soft); }
       currentIndex = moves.length;
       analysisScores = [];
       stopAnalysis(false);
-      renderAll({});
-      $("board-status").textContent = "Move played. Load or analyse the updated game when ready.";
+      renderAll(playMode ? botGameHeaders() : {});
+      if (playMode && !game.isGameOver()) {
+        if (game.turn() !== playerColor) {
+          window.setTimeout(requestBotMove, 380);
+        } else {
+          $("board-status").textContent = "Your turn. Make a move on the board.";
+        }
+      } else if (playMode && game.isGameOver()) {
+        finishBotGame();
+      } else {
+        $("board-status").textContent = "Move played. Load or analyse the updated game when ready.";
+      }
     }
 
     function updatePosition(index) {
@@ -842,12 +805,16 @@ tbody tr.current-row { background: var(--accent-soft); }
       const status = game.isCheckmate() ? `Checkmate · ${game.turn() === "w" ? "Black" : "White"} wins`
         : game.isStalemate() ? "Draw · stalemate"
         : game.isDraw() ? "Drawn position"
-        : `${turnName} to move${game.isCheck() ? " · Check" : ""}`;
+        : playMode && game.turn() !== playerColor
+          ? (botThinking ? `${botProfile.name} is thinking` : `${botProfile.name} to move`)
+          : `${turnName} to move${game.isCheck() ? " · Check" : ""}`;
       $("turn-indicator").textContent = status;
       $("board-title").textContent = currentIndex === 0 ? "Starting position" : `After ${currentIndex} ${currentIndex === 1 ? "move" : "moves"}`;
       $("board-status").textContent = currentIndex < moves.length
         ? "Reviewing game history. Go to the final position to continue playing."
-        : game.isGameOver() ? status : `${turnName} to move. Drag a piece to make a legal move.`;
+        : playMode && game.turn() !== playerColor
+          ? (botThinking ? `${botProfile.name} is choosing a move.` : `${botProfile.name} to move.`)
+          : game.isGameOver() ? status : `${turnName} to move. Drag a piece to make a legal move.`;
     }
 
     function renderMoveList() {
@@ -995,6 +962,285 @@ tbody tr.current-row { background: var(--accent-soft); }
         $(`${color}-accuracy`).textContent = avg == null ? "—" : `${avg.toFixed(1)}%`;
         $(`${color}-rating`).textContent = avg == null ? "Accuracy · estimated rating —" : `Experimental estimate · ${estimateRating(avg).toLocaleString()} Elo`;
       }
+    }
+
+
+    function botGameHeaders() {
+      if (!playMode || !botProfile) return {};
+      return playerColor === "w"
+        ? { White: "You", Black: botProfile.name, Event: "Bot game" }
+        : { White: botProfile.name, Black: "You", Event: "Bot game" };
+    }
+
+    function randomLine(lines) {
+      return lines[Math.floor(Math.random() * lines.length)];
+    }
+
+    function addBotChat(speaker, message, isYou = false) {
+      const container = $("bot-chat-lines");
+      if (!container) return;
+      const empty = container.querySelector(".empty-state");
+      if (empty) empty.remove();
+      const bubble = document.createElement("div");
+      bubble.className = "chat-message" + (isYou ? " you" : "");
+      const name = document.createElement("strong");
+      name.textContent = speaker;
+      const text = document.createElement("span");
+      text.textContent = message;
+      bubble.append(name, text);
+      container.append(bubble);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function stopBotWorker() {
+      botToken++;
+      if (botWorker) {
+        if (botWorker._blobUrl) URL.revokeObjectURL(botWorker._blobUrl);
+        botWorker.terminate();
+      }
+      botWorker = null;
+      botWorkerReady = false;
+      botThinking = false;
+      botCandidates = [];
+    }
+
+    function startBotGame(id) {
+      const profile = BOT_PROFILES[id];
+      if (!profile) return;
+      stopAnalysis(false);
+      stopBotWorker();
+      botProfile = profile;
+      playMode = true;
+      playerColor = $("player-side").value === "b" ? "b" : "w";
+      startFen = START_FEN;
+      moves = [];
+      positions = [START_FEN];
+      currentIndex = 0;
+      game = new Chess();
+      analysisScores = [];
+      pendingPromotion = null;
+      closePromotionModal();
+      $("pgn-input").value = "";
+      $("bot-chat-panel").hidden = false;
+      $("bot-chat-title").textContent = "Playing against " + profile.name;
+      $("bot-chat-lines").replaceChildren();
+      $("bot-lobby-message").textContent = "Game started against " + profile.name + ".";
+      $("end-bot-btn").hidden = false;
+      renderAll(botGameHeaders());
+      addBotChat(profile.name, randomLine(profile.greeting));
+      if (playerColor === "b") {
+        $("board-status").textContent = profile.name + " is making the first move.";
+        window.setTimeout(requestBotMove, 450);
+      } else {
+        $("board-status").textContent = "Your turn. Drag a piece to make a move.";
+      }
+    }
+
+    function requestBotMove() {
+      if (!playMode || !botProfile || game.isGameOver() || game.turn() === playerColor || botThinking) return;
+      botThinking = true;
+      $("turn-indicator").textContent = botProfile.name + " is thinking";
+      $("board-status").textContent = botProfile.name + " is choosing a move.";
+      const token = botToken;
+      if (!botWorker) {
+        try {
+          botWorker = makeEngineWorker();
+        } catch (error) {
+          botThinking = false;
+          $("board-status").textContent = "Could not start the bot engine.";
+          setImportMessage("Bot engine error: " + error.message, true);
+          return;
+        }
+
+        botWorker.onerror = (event) => {
+          if (token !== botToken) return;
+          botThinking = false;
+          $("board-status").textContent = "The bot engine could not be loaded. Check your connection and try again.";
+          setImportMessage("Stockfish could not start. " + (event.message || ""), true);
+          stopBotWorker();
+        };
+
+        botWorker.onmessage = (event) => {
+          if (token !== botToken || !playMode || !botProfile) return;
+          const line = String(event.data || "").trim();
+          if (line === "uciok") {
+            botWorker.postMessage("setoption name Threads value 1");
+            botWorker.postMessage("setoption name Hash value 32");
+            botWorker.postMessage("setoption name Skill Level value " + botProfile.skill);
+            botWorker.postMessage("setoption name MultiPV value 5");
+            botWorker.postMessage("isready");
+            return;
+          }
+          if (line === "readyok") {
+            botWorkerReady = true;
+            runBotSearch(token);
+            return;
+          }
+          if (line.startsWith("info ")) {
+            const match = line.match(/\bmultipv\s+(\d+).*?\bscore\s+(cp|mate)\s+(-?\d+).*?\bpv\s+([a-h][1-8][a-h][1-8][qrbn]?)/);
+            if (match) {
+              let score = Number(match[3]);
+              if (match[2] === "mate") score = (Math.sign(score) || 1) * (10000 - Math.min(999, Math.abs(score)) * 10);
+              botCandidates[Number(match[1]) - 1] = { uci: match[4], score };
+            }
+            return;
+          }
+          if (line.startsWith("bestmove")) {
+            const parts = line.split(/\s+/);
+            const fallback = parts[1];
+            const choice = chooseBotMove(fallback);
+            botThinking = false;
+            if (!choice || choice === "(none)" || choice === "0000") {
+              if (game.isGameOver()) finishBotGame();
+              else $("board-status").textContent = "The bot could not find a move.";
+              return;
+            }
+            const move = { from: choice.slice(0, 2), to: choice.slice(2, 4) };
+            if (choice.length > 4) move.promotion = choice[4];
+            try {
+              const played = game.move(move);
+              if (!played) throw new Error("Bot returned an illegal move.");
+              const chatType = played.san.includes("+") ? "check" : played.captured ? "capture" : "after";
+              addBotChat(botProfile.name, randomLine(botProfile[chatType]));
+              updateGameFromCurrent();
+            } catch (error) {
+              $("board-status").textContent = "The bot made an invalid move. You can end this match and try again.";
+              setImportMessage(error.message, true);
+            }
+          }
+        };
+        botWorker.postMessage("uci");
+        return;
+      }
+      if (botWorkerReady) runBotSearch(token);
+      else {
+        botThinking = false;
+        $("board-status").textContent = "The bot is still starting. Try again in a moment.";
+      }
+    }
+
+    function runBotSearch(token) {
+      if (!botWorker || token !== botToken || !playMode || !botThinking) return;
+      botCandidates = [];
+      botWorker.postMessage("position fen " + game.fen());
+      botWorker.postMessage("go depth " + botProfile.depth);
+    }
+
+    function chooseBotMove(fallback) {
+      const legalMoves = game.moves({ verbose: true });
+      const byUci = new Map(legalMoves.map(move => [
+        move.from + move.to + (move.promotion || ""),
+        move
+      ]));
+      const candidates = botCandidates.filter(Boolean).filter(candidate => byUci.has(candidate.uci));
+      if (!candidates.length) return fallback;
+      const bestScore = candidates[0].score;
+      const within = candidates.filter(candidate => candidate.score >= bestScore - 180);
+      if (botProfile.style === "queen" && game.moveNumber() <= 12) {
+        const queenMove = within.find(candidate => byUci.get(candidate.uci).piece === "q");
+        if (queenMove) return queenMove.uci;
+      }
+      if (botProfile.style === "tactical") {
+        const tactical = within.find(candidate => {
+          const move = byUci.get(candidate.uci);
+          return move.captured || move.san.includes("+") || move.san.includes("#");
+        });
+        if (tactical) return tactical.uci;
+      }
+      if (botProfile.style === "positional") {
+        const developing = within.find(candidate => {
+          const move = byUci.get(candidate.uci);
+          return ["n", "b"].includes(move.piece) && move.from[1] === (game.turn() === "w" ? "8" : "1");
+        });
+        if (developing) return developing.uci;
+      }
+      return candidates[0].uci || fallback;
+    }
+
+    function finishBotGame() {
+      botThinking = false;
+      if (!botProfile) return;
+      const status = game.isCheckmate()
+        ? (game.turn() === playerColor ? "lose" : "win")
+        : "draw";
+      addBotChat(botProfile.name, botProfile.result[status]);
+      $("board-status").textContent = game.isCheckmate()
+        ? (status === "win" ? "You won by checkmate." : "You were checkmated.")
+        : "The game is a draw.";
+      $("turn-indicator").textContent = game.isCheckmate()
+        ? (status === "win" ? "You won" : botProfile.name + " won")
+        : "Draw";
+      $("end-bot-btn").textContent = "End match";
+      $("analyse-btn").focus({ preventScroll: true });
+    }
+
+    function sendQuickChat(kind) {
+      if (!playMode || !botProfile || !botProfile.quick[kind]) return;
+      const messages = { good: "Good game", nice: "Nice move", think: "I'm thinking" };
+      addBotChat("You", messages[kind], true);
+      window.setTimeout(() => {
+        if (playMode && botProfile) addBotChat(botProfile.name, botProfile.quick[kind]);
+      }, 280);
+    }
+
+    function setPageMode(mode) {
+      const bots = mode === "bots";
+      $("review-import").hidden = bots;
+      $("bot-lobby").hidden = !bots;
+      $("mode-review-btn").classList.toggle("active", !bots);
+      $("mode-bots-btn").classList.toggle("active", bots);
+      $("mode-review-btn").setAttribute("aria-pressed", String(!bots));
+      $("mode-bots-btn").setAttribute("aria-pressed", String(bots));
+    }
+
+    function setBoardTheme(theme, save = true) {
+      const allowed = ["green", "blue", "walnut", "slate"];
+      const selected = allowed.includes(theme) ? theme : "green";
+      $("board-wrap").dataset.boardTheme = selected;
+      $("board-theme-select").value = selected;
+      if (save) {
+        try { localStorage.setItem("aca-board-theme", selected); } catch (_) {}
+      }
+    }
+
+    async function copyCurrentFen() {
+      const fen = game.fen();
+      try {
+        await navigator.clipboard.writeText(fen);
+        $("board-status").textContent = "FEN copied to clipboard.";
+      } catch (_) {
+        $("board-status").textContent = "Clipboard access was blocked by the browser.";
+      }
+    }
+
+    function downloadCurrentPgn() {
+      const history = game.history();
+      const headers = botGameHeaders();
+      const white = headers.White || "White";
+      const black = headers.Black || "Black";
+      const result = game.isCheckmate()
+        ? (game.turn() === "w" ? "0-1" : "1-0")
+        : game.isDraw() ? "1/2-1/2" : "*";
+      const pgn = [
+        '[Event "Archie Chess Analysis"]',
+        '[White "' + white.replace(/["\\]/g, "") + '"]',
+        '[Black "' + black.replace(/["\\]/g, "") + '"]',
+        '[Result "' + result + '"]',
+        "",
+        history.reduce((out, san, index) => {
+          if (index % 2 === 0) out.push((Math.floor(index / 2) + 1) + ". " + san);
+          else out[out.length - 1] += " " + san;
+          return out;
+        }, []).join(" "),
+        result
+      ].join("\n");
+      const blob = new Blob([pgn], { type: "application/x-chess-pgn;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "archies-chess-game.pgn";
+      link.click();
+      URL.revokeObjectURL(url);
     }
 
     function makeEngineWorker() {
@@ -1147,7 +1393,7 @@ tbody tr.current-row { background: var(--accent-soft); }
     }
 
     function tryBoardMove(source, target, piece) {
-      if (currentIndex !== moves.length || game.isGameOver()) return "snapback";
+      if (currentIndex !== moves.length || game.isGameOver() || botThinking || (playMode && game.turn() !== playerColor)) return "snapback";
       const isPawn = piece.toLowerCase().endsWith("p");
       const isPromotion = isPawn && (target[1] === "1" || target[1] === "8");
       if (isPromotion) {
@@ -1174,7 +1420,7 @@ tbody tr.current-row { background: var(--accent-soft); }
         pieceTheme: PIECE_THEME,
         showNotation: true,
         onDragStart: (source, piece) => {
-          if (currentIndex !== moves.length || game.isGameOver()) return false;
+          if (currentIndex !== moves.length || game.isGameOver() || botThinking || (playMode && game.turn() !== playerColor)) return false;
           const color = game.turn() === "w" ? "w" : "b";
           if (!piece.startsWith(color)) return false;
           return game.moves({ square: source, verbose: true }).length > 0;
@@ -1223,8 +1469,71 @@ tbody tr.current-row { background: var(--accent-soft); }
       });
     });
 
+
     initializeBoard();
     renderAll({});
+
+    $("mode-review-btn").addEventListener("click", () => setPageMode("review"));
+    $("mode-bots-btn").addEventListener("click", () => setPageMode("bots"));
+    $("bot-grid").querySelectorAll("[data-bot]").forEach(card => {
+      card.addEventListener("click", () => {
+        $("bot-grid").querySelectorAll("[data-bot]").forEach(item => {
+          const selected = item === card;
+          item.classList.toggle("selected", selected);
+          item.setAttribute("aria-pressed", String(selected));
+        });
+      });
+    });
+    $("start-bot-btn").addEventListener("click", () => {
+      const selected = $("bot-grid").querySelector("[data-bot].selected");
+      if (selected) startBotGame(selected.dataset.bot);
+    });
+    $("end-bot-btn").addEventListener("click", () => {
+      stopBotWorker();
+      playMode = false;
+      $("bot-chat-panel").hidden = true;
+      $("board-status").textContent = "Match ended. You can review the moves or start another game.";
+      $("turn-indicator").textContent = game.turn() === "w" ? "White to move" : "Black to move";
+    });
+    document.querySelectorAll("[data-chat]").forEach(button => {
+      button.addEventListener("click", () => sendQuickChat(button.dataset.chat));
+    });
+    $("board-theme-select").addEventListener("change", event => setBoardTheme(event.target.value));
+    $("copy-fen-btn").addEventListener("click", copyCurrentFen);
+    $("download-pgn-btn").addEventListener("click", downloadCurrentPgn);
+    try {
+      setBoardTheme(localStorage.getItem("aca-board-theme") || "green", false);
+    } catch (_) {
+      setBoardTheme("green", false);
+    }
+
+    document.addEventListener("keydown", event => {
+      const target = event.target;
+      const typing = target && (
+        target.isContentEditable ||
+        ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
+      );
+      if (typing || $("promotion-modal").classList.contains("open") || event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        updatePosition(currentIndex - 1);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        updatePosition(currentIndex + 1);
+      } else if (event.key === "Home") {
+        event.preventDefault();
+        updatePosition(0);
+      } else if (event.key === "End") {
+        event.preventDefault();
+        updatePosition(moves.length);
+      } else if (event.key.toLowerCase() === "f") {
+        event.preventDefault();
+        $("flip-btn").click();
+      } else if (event.key.toLowerCase() === "a" && !$("analyse-btn").disabled) {
+        event.preventDefault();
+        $("analyse-btn").click();
+      }
+    });
   </script>
 
   <script>
@@ -1232,7 +1541,6 @@ tbody tr.current-row { background: var(--accent-soft); }
       const button = document.getElementById("theme-toggle");
       const themeColor = document.querySelector('meta[name="theme-color"]');
       if (!button) return;
-
       function applyTheme(theme, save) {
         document.documentElement.dataset.theme = theme;
         const dark = theme === "dark";
@@ -1244,8 +1552,7 @@ tbody tr.current-row { background: var(--accent-soft); }
           try { localStorage.setItem("aca-theme", theme); } catch (_) {}
         }
       }
-
-      applyTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light", false);
+      applyTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark", false);
       button.addEventListener("click", function () {
         const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
         applyTheme(next, true);
