@@ -434,6 +434,16 @@ tbody tr.current-row { background: var(--accent-soft); }
             <span class="bot-name">Victor</span>
             <span class="bot-style">Strong and tactical. Looks for checks, captures and loose pieces.</span>
           </button>
+          <button class="bot-card" type="button" data-bot="theo" aria-pressed="false">
+            <span class="bot-card-top"><span class="bot-avatar">TH</span><span class="bot-rating">About 1,100</span></span>
+            <span class="bot-name">Theo</span>
+            <span class="bot-style">Likes closed positions, solid pawn structures and slow plans.</span>
+          </button>
+          <button class="bot-card" type="button" data-bot="sofia" aria-pressed="false">
+            <span class="bot-card-top"><span class="bot-avatar">SO</span><span class="bot-rating">About 2,000</span></span>
+            <span class="bot-name">Sofia</span>
+            <span class="bot-style">The strongest opponent. Accurate, patient and hard to surprise.</span>
+          </button>
         </div>
         <div class="bot-lobby-bottom">
           <div class="bot-options">
@@ -483,6 +493,8 @@ tbody tr.current-row { background: var(--accent-soft); }
             </select>
             <button class="btn subtle" id="copy-fen-btn" type="button">Copy FEN</button>
             <button class="btn subtle" id="download-pgn-btn" type="button">Save PGN</button>
+            <button class="btn subtle" id="takeback-btn" type="button" hidden>Take back</button>
+            <button class="btn subtle" id="sound-toggle" type="button" aria-pressed="false">Sound off</button>
           </div>
         </section>
       </section>
@@ -555,7 +567,10 @@ tbody tr.current-row { background: var(--accent-soft); }
         <section class="panel bot-chat-panel" id="bot-chat-panel" hidden>
           <div class="panel-head">
             <div class="panel-title"><span class="eyebrow">MATCH CHAT</span><h2 id="bot-chat-title">Playing against Milo</h2></div>
-            <button class="btn subtle" id="end-bot-btn" type="button">End match</button>
+            <div class="input-actions" style="margin:0">
+              <button class="btn subtle" id="rematch-btn" type="button">Rematch</button>
+              <button class="btn subtle" id="end-bot-btn" type="button">End match</button>
+            </div>
           </div>
           <div class="panel-body bot-chat">
             <div class="bot-chat-lines" id="bot-chat-lines" role="log" aria-live="polite">
@@ -704,6 +719,24 @@ tbody tr.current-row { background: var(--accent-soft); }
         check: ["Check. The next move matters.", "A forcing move is usually worth checking.", "Your king is in check."],
         quick: { good: "Thank you. Back to the position.", nice: "Thanks. I had to calculate that one.", think: "Take your time. I will check the variations." },
         result: { win: "Good game. The tactics decided it.", lose: "Well played. You calculated the position better.", draw: "A draw. The tactics did not settle it." }
+      },
+      theo: {
+        id: "theo", name: "Theo", rating: 1100, skill: 5, depth: 9, style: "positional",
+        greeting: ["I like a quiet game with a clear plan. Let's begin.", "Good to meet you. I prefer to build a position slowly.", "Let's see who handles the centre better."],
+        after: ["I'll keep improving my pieces.", "A patient move can be useful too.", "I want to keep my pawn structure sound."],
+        capture: ["That changes the pawn structure.", "I'll take the exchange if it helps my position.", "The board is opening up now."],
+        check: ["A check changes the plan. I'll answer it.", "I need to deal with the threat first.", "Good check. I'll find a safe response."],
+        quick: { good: "Thanks. Let's keep the game steady.", nice: "Thank you. That was a useful move.", think: "Take your time. I'm planning ahead." },
+        result: { win: "Good game. Keeping the position solid helped.", lose: "Well played. Your plan worked better than mine.", draw: "A solid game from both sides." }
+      },
+      sofia: {
+        id: "sofia", name: "Sofia", rating: 2000, skill: 18, depth: 13, style: "balanced",
+        greeting: ["Hello. I'll be looking for accurate moves. Good luck.", "Let's play. Every move gives us something to think about.", "Ready when you are. I'll try to keep the position under control."],
+        after: ["I'll keep looking for the most accurate continuation.", "The position is still full of details.", "I'll take the time to check the alternatives."],
+        capture: ["That exchange changes the balance.", "I'll take the material if the position allows it.", "The position has become more concrete."],
+        check: ["I see the check. I'll respond carefully.", "A forcing move. I'll need to calculate it.", "Good check. I'll find the best reply I can."],
+        quick: { good: "Thank you. Let's keep playing.", nice: "Thanks. That was a precise move.", think: "Take the time you need." },
+        result: { win: "Good game. The details made the difference.", lose: "Well played. You found the better moves.", draw: "A fair result. Neither side found a clear edge." }
       }
     };
 
