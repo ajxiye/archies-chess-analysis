@@ -425,6 +425,44 @@ ion>
     import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm";
 
     const $ = (id) => document.getElementById(id);
+
+    const ICON_PATHS = {
+      house:'<path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/>',
+      chart:'<path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-5 5"/>',
+      swords:'<path d="m14.5 17.5 3 3 3-3-3-3"/><path d="m2 2 7 7"/><path d="m3 7 4-4"/><path d="m8 12 9 9"/><path d="m14 3 7 7"/><path d="m17 2 5 5"/><path d="m12 8 9-6"/>',
+      puzzle:'<path d="M19 13h-2a2 2 0 1 0-4 0v2h-2v-2a2 2 0 1 0-4 0H5V5h8v2a2 2 0 1 0 4 0V5h2z"/><path d="M5 15h2a2 2 0 1 1 4 0v4H5z"/>',
+      library:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>',
+      settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.8 1.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.1h-2.6v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1-1.8-1.8.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H6.3v-2.6h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1 1.8-1.8.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5v-.1h2.6v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.8 1.8-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1v2.6h-.1a1.7 1.7 0 0 0-1.5 1Z"/>',
+      keyboard:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h.01M10 9h.01M13 9h.01M16 9h.01M7 12h.01M10 12h.01M13 12h.01M16 12h.01M8 15h8"/>',
+      sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>',
+      moon:'<path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/>',
+      'chevrons-left':'<path d="m11 17-5-5 5-5M18 17l-5-5 5-5"/>','chevrons-right':'<path d="m6 17 5-5-5-5m7 10 5-5-5-5"/>',
+      'chevron-left':'<path d="m15 18-6-6 6-6"/>','chevron-right':'<path d="m9 18 6-6-6-6"/>',
+      'flip-horizontal':'<path d="M12 3v18M3 7v10l6-5zM21 7v10l-6-5z"/>',
+      copy:'<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
+      download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>',
+      bookmark:'<path d="M6 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18l-6-4-6 4z"/>',
+      undo:'<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6L3 13"/>',
+      'volume-x':'<path d="M11 5 6 9H3v6h3l5 4z"/><path d="m17 9 5 6m0-6-5 6"/>',
+      'volume-2':'<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7m3-10a9 9 0 0 1 0 13"/>',
+      square:'<rect x="5" y="5" width="14" height="14" rx="2"/>',
+      'folder-open':'<path d="m3 7 1-3h6l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 12h18"/>',
+      'book-open':'<path d="M12 7v14"/><path d="M3 18V5a2 2 0 0 1 2-2h3a4 4 0 0 1 4 4 4 4 0 0 1 4-4h3a2 2 0 0 1 2 2v13h-5a4 4 0 0 0-4 3 4 4 0 0 0-4-3z"/>',
+      refresh:'<path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.4-3"/>',
+      play:'<path d="m7 4 13 8-13 8z"/>','x':'<path d="m18 6-12 12M6 6l12 12"/>',
+      lightbulb:'<path d="M9 18h6m-5 4h4"/><path d="M8 14a6 6 0 1 1 8 0c-.8.7-1 1.4-1 2H9c0-.6-.2-1.3-1-2Z"/>',
+      'rotate-ccw':'<path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7l-3 3"/>','arrow-right':'<path d="M5 12h14m-7-7 7 7-7 7"/>'
+    };
+    function mountIcons(){
+      document.querySelectorAll("[data-icon]").forEach(element=>{
+        if(element.querySelector(":scope > svg[data-ui-icon]"))return;
+        const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+        svg.setAttribute("viewBox","0 0 24 24");svg.setAttribute("aria-hidden","true");svg.setAttribute("focusable","false");svg.setAttribute("data-ui-icon","true");svg.classList.add("aca-icon");
+        svg.innerHTML=ICON_PATHS[element.dataset.icon]||ICON_PATHS.square;element.insertBefore(svg,element.firstChild);
+      });
+    }
+    window.ACAIcons=mountIcons;
+
     const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     const ENGINE_BASE = "https://cdn.jsdelivr.net/npm/stockfish@19.0.1/";
     const ENGINE_SCRIPT = ENGINE_BASE + "stockfish-19-lite-single.js";
@@ -464,6 +502,9 @@ ion>
     let puzzleSession = null;
     let puzzleLoading = false;
     let puzzleRequestToken = 0;
+    let puzzleMode = "daily";
+    let tacticalPuzzleIndex = 0;
+    let boardDragState = null;
 
     const BOT_PROFILES = {
       milo: {
@@ -1874,6 +1915,14 @@ ion>
       }) || null;
     }
 
+    function paintLastMoveHighlight(){
+      const el=$("board");if(!el||!game||typeof game.history!=="function")return;
+      el.querySelectorAll(".aca-last-move").forEach(s=>s.classList.remove("aca-last-move"));
+      const move=game.history({verbose:true}).slice(-1)[0];if(!move)return;
+      const from=getBoardSquareElement(move.from),to=getBoardSquareElement(move.to);
+      if(from)from.classList.add("aca-last-move");if(to)to.classList.add("aca-last-move");
+    }
+
     function clearBoardSelection() {
       selectedSquare = null;
       selectedLegalMoves = [];
@@ -2012,38 +2061,94 @@ ion>
         openPromotionModal(source, target);
         return "snapback";
       }
-      return playMoveFromBoard(source, target, undefined, false) ? undefined : "snapback";
+      return playMoveFromBoard(source, target, undefined, true) ? undefined : "snapback";
     }
 
-    function initializeBoard() {
-      if (!window.Chessboard || !window.jQuery) {
-        $("board-status").textContent = "The chessboard library did not load. Refresh the page while connected to the internet.";
-        return;
+    function initializeBoard(){
+      const root=$("board"); if(!root)return;
+      root.replaceChildren(); root.classList.add("aca-board"); root.setAttribute("role","grid"); root.setAttribute("aria-label","Interactive chess board");
+      let orientation="white"; const squaresLayer=document.createElement("div"); squaresLayer.className="aca-board-squares";
+      const piecesLayer=document.createElement("div"); piecesLayer.className="aca-board-pieces"; piecesLayer.setAttribute("aria-hidden","true"); root.append(squaresLayer,piecesLayer);
+      function coordinates(square){const file=square.charCodeAt(0)-97,rank=Number(square[1])-1;return{x:orientation==="white"?file:7-file,y:orientation==="white"?7-rank:rank};}
+      function transformForSquare(square,dx=0,dy=0){const p=coordinates(square);return `translate3d(calc(${p.x*100}% + ${dx}px), calc(${p.y*100}% + ${dy}px), 0)`;}
+      function buildSquares(){
+        squaresLayer.replaceChildren();const files=orientation==="white"?"abcdefgh":"hgfedcba",ranks=orientation==="white"?"87654321":"12345678";
+        for(let row=0;row<8;row++)for(let col=0;col<8;col++){
+          const file=files[col],rank=ranks[row],name=file+rank,square=document.createElement("div");
+          square.className="square-55d63 "+((file.charCodeAt(0)-97+Number(rank))%2===0?"aca-light":"aca-dark");
+          square.id="square-"+name;square.dataset.square=name;square.setAttribute("role","gridcell");square.setAttribute("aria-label",name);
+          if(col===0){const label=document.createElement("span");label.className="aca-rank-label";label.textContent=rank;square.append(label);}
+          if(row===7){const label=document.createElement("span");label.className="aca-file-label";label.textContent=file;square.append(label);}
+          squaresLayer.append(square);
+        }
       }
-      const boardElement = $("board");
-      boardElement.addEventListener("click", handleBoardSquareClick);
-
-      board = window.Chessboard("board", {
-        position: START_FEN,
-        draggable: true,
-        pieceTheme: PIECE_THEME,
-        showNotation: true,
-        appearSpeed: 0,
-        moveSpeed: 110,
-        snapSpeed: 0,
-        snapbackSpeed: 120,
-        trashSpeed: 0,
-        onDragStart: (source, piece) => {
-          if (!canHumanMoveOnBoard()) return false;
-          const color = game.turn() === "w" ? "w" : "b";
-          if (!piece.startsWith(color)) return false;
-          return game.moves({ square: source, verbose: true }).length > 0;
-        },
-        onDrop: tryBoardMove,
-        onSnapEnd: () => board.position(game.fen(), false)
+      function parseFen(fen){
+        const rows=String(fen||"").split(/\s+/)[0].split("/"),pieces=new Map();if(rows.length!==8)return pieces;
+        for(let row=0;row<8;row++){let file=0;for(const token of rows[row]){
+          if(/\d/.test(token)){file+=Number(token);continue;}if(file>7)break;
+          pieces.set("abcdefgh"[file]+String(8-row),(token===token.toUpperCase()?"w":"b")+token.toUpperCase());file++;
+        }}return pieces;
+      }
+      function makePiece(square,code){
+        const img=document.createElement("img");img.className="aca-piece";img.alt="";img.draggable=false;img.dataset.piece=code;img.dataset.square=square;
+        img.src=PIECE_THEME.replace("{piece}",code);img.onerror=()=>{img.alt=code;};return img;
+      }
+      function renderPosition(fen,animate){
+        const desired=parseFen(fen),current=new Map(Array.from(piecesLayer.querySelectorAll(".aca-piece")).map(p=>[p.dataset.square,p]));
+        const assigned=new Map(),last=animate&&game?game.history({verbose:true}).slice(-1)[0]:null;
+        if(last){
+          const mover=current.get(last.from);if(mover)assigned.set(last.to,mover);
+          if(last.flags&&(last.flags.includes("k")||last.flags.includes("q"))){
+            const rank=last.color==="w"?"1":"8",kingSide=last.flags.includes("k"),from=(kingSide?"h":"a")+rank,to=(kingSide?"f":"d")+rank,rook=current.get(from);
+            if(rook)assigned.set(to,rook);
+          }
+        }
+        const used=new Set();
+        for(const [square,code] of desired){
+          let piece=assigned.get(square);
+          if(!piece){const old=current.get(square);if(old&&old.dataset.piece===code&&!used.has(old))piece=old;}
+          if(!piece)piece=makePiece(square,code);
+          piece.dataset.square=square;piece.dataset.piece=code;piece.src=PIECE_THEME.replace("{piece}",code);
+          piece.style.transition=animate?"":"none";piece.style.transform=transformForSquare(square);piece.classList.remove("aca-dragging");
+          piecesLayer.append(piece);used.add(piece);
+        }
+        for(const piece of current.values())if(!used.has(piece))piece.remove();
+        if(!animate)requestAnimationFrame(()=>piecesLayer.querySelectorAll(".aca-piece").forEach(p=>p.style.transition=""));
+        paintBoardSelection();paintLastMoveHighlight();
+      }
+      buildSquares();
+      board={
+        position(fen,animate=false){renderPosition(fen,Boolean(animate));return this;},
+        orientation(value){if(value===undefined)return orientation;orientation=value==="black"?"black":"white";root.dataset.orientation=orientation;buildSquares();renderPosition(game.fen(),false);return this;},
+        resize(){return this;}
+      };
+      root.addEventListener("click",handleBoardSquareClick);
+      root.addEventListener("pointerdown",event=>{
+        if(event.button!==undefined&&event.button!==0)return;const square=event.target.closest(".square-55d63");
+        if(!square||!root.contains(square)||!canHumanMoveOnBoard())return;
+        const source=square.dataset.square,piece=game.get(source);
+        if(!piece||piece.color!==game.turn()||!game.moves({square:source}).length)return;
+        boardDragState={source,pieceCode:piece.color+piece.type.toUpperCase(),pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,moved:false,image:piecesLayer.querySelector('[data-square="'+source+'"]')};
+        try{square.setPointerCapture(event.pointerId);}catch(_){}
       });
-      window.addEventListener("resize", () => board && board.resize());
+      root.addEventListener("pointermove",event=>{
+        if(!boardDragState||event.pointerId!==boardDragState.pointerId)return;
+        const dx=event.clientX-boardDragState.startX,dy=event.clientY-boardDragState.startY;
+        if(!boardDragState.moved&&Math.hypot(dx,dy)<5)return;boardDragState.moved=true;
+        if(boardDragState.image){boardDragState.image.classList.add("aca-dragging");boardDragState.image.style.transform=transformForSquare(boardDragState.source,dx,dy);}
+      });
+      root.addEventListener("pointerup",event=>{
+        if(!boardDragState||event.pointerId!==boardDragState.pointerId)return;const drag=boardDragState;boardDragState=null;if(!drag.moved)return;
+        const found=document.elementFromPoint(event.clientX,event.clientY),target=found&&found.closest?found.closest(".square-55d63"):null;
+        const destination=target&&root.contains(target)?target.dataset.square:"";
+        const result=destination?tryBoardMove(drag.source,destination,drag.pieceCode):"snapback";
+        if(result==="snapback")board.position(game.fen(),false);
+        suppressNextBoardClick=true;window.setTimeout(()=>{suppressNextBoardClick=false;},0);
+      });
+      root.addEventListener("pointercancel",()=>{if(boardDragState){boardDragState=null;board.position(game.fen(),false);}});
+      window.addEventListener("resize",()=>board&&board.resize());board.position(START_FEN,false);
     }
+
 
     $("load-pgn-btn").addEventListener("click", () => {
       const pgn = $("pgn-input").value.trim();
@@ -2085,6 +2190,7 @@ ion>
 
 
     initializeBoard();
+    mountIcons();
     renderAll({});
 
     document.querySelectorAll("[data-page-link]").forEach(link => {
