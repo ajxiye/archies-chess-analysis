@@ -12,7 +12,7 @@
         const saved = localStorage.getItem("aca-theme");
         document.documentElement.dataset.theme = saved || "dark";
         const route = location.hash.replace(/^#\/?/, "").split(/[?]/)[0];
-        document.documentElement.dataset.page = ["home", "analysis", "play", "settings"].includes(route) ? route : "home";
+        document.documentElement.dataset.page = ["home", "analysis", "play", "puzzles", "library", "settings"].includes(route) ? route : "home";
       } catch (_) {
         document.documentElement.dataset.theme = "dark";
       }
@@ -437,7 +437,7 @@ html[data-page="play"]:not([data-playing="true"]) #workspace{display:none!import
 html[data-page="play"] .side-column{grid-template-columns:1fr}
 html[data-page="settings"] #home-page,html[data-page="settings"] #review-import,html[data-page="settings"] #bot-lobby,html[data-page="settings"] #workspace,html[data-page="settings"] #review-panel{display:none!important}
 html[data-page="settings"] #settings-page{display:block}
-@media(max-width:760px){.page-nav{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}.page-nav a{justify-content:center;padding:7px 8px}.home-cards{grid-template-columns:1fr}.home-card{min-height:155px}html[data-page="play"] #workspace{grid-template-columns:1fr}}
+@media(max-width:760px){.page-nav{width:100%;display:grid;grid-template-columns:repeat(6,minmax(0,1fr))}.page-nav a{justify-content:center;padding:7px 8px}.home-cards{grid-template-columns:1fr}.home-card{min-height:155px}html[data-page="play"] #workspace{grid-template-columns:1fr}}
 @media(max-width:520px){.settings-field{grid-template-columns:1fr 135px;gap:9px}.home-welcome{padding-top:12px}}
 
 
@@ -2012,6 +2012,7 @@ html[data-page="puzzles"] .best-move-row{display:none}
         positions = [startFen];
         currentIndex = 0;
         game = new Chess(startFen);
+        puzzleSession.playerColor = game.turn();
         playMode = false;
         botThinking = false;
         boardFlipped = game.turn() === "b";
@@ -2047,6 +2048,7 @@ html[data-page="puzzles"] .best-move-row{display:none}
           };
           startFen = puzzleSession.startFen;
           moves = []; positions = [startFen]; currentIndex = 0; game = new Chess(startFen);
+          puzzleSession.playerColor = game.turn();
           boardFlipped = game.turn() === "b";
           if (board) {
             board.orientation(boardFlipped ? "black" : "white");
@@ -2344,10 +2346,13 @@ html[data-page="puzzles"] .best-move-row{display:none}
     }
 
     function canHumanMoveOnBoard() {
-      return currentIndex === moves.length &&
-        !game.isGameOver() &&
-        !botThinking &&
-        (!playMode || game.turn() === playerColor);
+      if (currentIndex !== moves.length || game.isGameOver() || botThinking) return false;
+      if (document.documentElement.dataset.page === "puzzles") {
+        return Boolean(puzzleSession && !puzzleSession.solved &&
+          puzzleSession.index < puzzleSession.solution.length &&
+          game.turn() === puzzleSession.playerColor);
+      }
+      return !playMode || game.turn() === playerColor;
     }
 
     function clearBoardSelection() {
@@ -2495,7 +2500,7 @@ html[data-page="puzzles"] .best-move-row{display:none}
         snapbackSpeed: 165,
         trashSpeed: 140,
         onDragStart: (source, piece) => {
-          if (currentIndex !== moves.length || game.isGameOver() || botThinking || (playMode && game.turn() !== playerColor)) return false;
+          if (!canHumanMoveOnBoard()) return false;
           const color = game.turn() === "w" ? "w" : "b";
           if (!piece.startsWith(color)) return false;
           return game.moves({ square: source, verbose: true }).length > 0;
