@@ -945,6 +945,9 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
     let botToken = 0;
     let soundEnabled = false;
     let moveAudioContext = null;
+    let puzzleSession = null;
+    let puzzleLoading = false;
+    let puzzleRequestToken = 0;
 
     const BOT_PROFILES = {
       milo: {
@@ -1034,6 +1037,7 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
     }
 
     function loadGameFromPgn(pgn) {
+      puzzleSession = null;
       playMode = false;
       delete document.documentElement.dataset.playing;
       navigateToPage("analysis");
@@ -1073,6 +1077,7 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
     }
 
     function newGame() {
+      puzzleSession = null;
       playMode = false;
       delete document.documentElement.dataset.playing;
       botThinking = false;
@@ -1370,6 +1375,7 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
     }
 
     function startBotGame(id) {
+      puzzleSession = null;
       const profile = BOT_PROFILES[id];
       if (!profile) return;
       stopAnalysis(false);
@@ -1553,7 +1559,7 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
     }
 
     function navigateToPage(page) {
-      const valid = ["home", "analysis", "play", "settings"];
+      const valid = ["home", "analysis", "play", "puzzles", "library", "settings"];
       if (!valid.includes(page)) page = "home";
       const nextHash = "#/" + page;
       if (window.location.hash !== nextHash) window.location.hash = nextHash;
@@ -1562,7 +1568,7 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
 
     function renderPageRoute() {
       const requested = window.location.hash.replace(/^#\/?/, "").split(/[?]/)[0].toLowerCase();
-      const valid = ["home", "analysis", "play", "settings"];
+      const valid = ["home", "analysis", "play", "puzzles", "library", "settings"];
       const page = valid.includes(requested) ? requested : "home";
       document.documentElement.dataset.page = page;
       document.querySelectorAll("[data-page-link]").forEach(link => {
@@ -1572,8 +1578,12 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
       $("review-import").hidden = page !== "analysis";
       $("bot-lobby").hidden = page !== "play" || playMode;
       $("bot-chat-panel").hidden = page !== "play" || !playMode;
-      const titles = {home:"Home",analysis:"Analysis",play:"Play",settings:"Settings"};
+      $("daily-puzzle-panel").hidden = page !== "puzzles";
+      const titles = {home:"Home",analysis:"Analysis",play:"Play",puzzles:"Daily Puzzle",library:"Game Library",settings:"Settings"};
       document.title = "Archie's Chess Analysis | " + titles[page];
+      if (page === "puzzles") loadDailyPuzzle(false);
+      if (page === "library") renderSavedGames();
+      if (page === "home") renderHomeSummary();
       window.requestAnimationFrame(() => {
         if (board) {
           board.resize();
