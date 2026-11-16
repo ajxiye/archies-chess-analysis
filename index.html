@@ -440,6 +440,101 @@ html[data-page="settings"] #settings-page{display:block}
 @media(max-width:760px){.page-nav{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}.page-nav a{justify-content:center;padding:7px 8px}.home-cards{grid-template-columns:1fr}.home-card{min-height:155px}html[data-page="play"] #workspace{grid-template-columns:1fr}}
 @media(max-width:520px){.settings-field{grid-template-columns:1fr 135px;gap:9px}.home-welcome{padding-top:12px}}
 
+
+/* Product interface refinements */
+:root {
+  --page:#0d1011; --panel:#141819; --panel-raised:#191f20; --panel-soft:#111516;
+  --panel-muted:#202728; --border:#2a3334; --border-strong:#3a4546;
+  --text:#edf1ef; --text-soft:#c3ceca; --muted:#84918d;
+  --accent:#36b47d; --accent-hover:#45c28d; --accent-soft:#17372b;
+  --blue:#58a9cb; --red:#d77779; --gold:#c8a55b;
+  --shadow:0 2px 12px rgba(0,0,0,.12); --radius:8px;
+}
+:root[data-theme="light"] {
+  --page:#edf0ed; --panel:#fafbf9; --panel-raised:#fff; --panel-soft:#f3f5f2;
+  --panel-muted:#e8ece8; --border:#d9dfda; --border-strong:#c6d0c9;
+  --text:#202824; --text-soft:#4f5d55; --muted:#7b8880;
+  --accent:#397e5b; --accent-hover:#2f6d4e; --accent-soft:#e1eee6;
+  --blue:#347d9d; --red:#a95256; --gold:#8b6c31;
+}
+html { scroll-behavior:smooth; }
+body { letter-spacing:.005em; }
+.app { width:min(1480px,100%); padding:22px clamp(14px,2.2vw,30px) 34px; }
+.topbar { padding-bottom:16px; margin-bottom:15px; }
+.brand-mark { border-radius:8px; background:var(--panel-raised); border-color:var(--border); }
+h1 { font-size:22px; letter-spacing:-.45px; }
+.tagline { font-size:11px; }
+.page-nav { width:100%; margin-bottom:20px; padding:4px; border-radius:7px; background:var(--panel); }
+.page-nav a { min-height:35px; padding:7px 15px; border-radius:5px; font-size:11px; }
+.page-nav a[aria-current="page"] { background:var(--panel-muted); border-color:var(--border-strong); color:var(--text); }
+.panel { border-radius:8px; box-shadow:none; }
+.panel-head { padding:14px 16px; }
+.panel-body { padding:15px 16px 16px; }
+.panel-head h2 { font-size:13px; }
+.btn,.utility-btn,.theme-toggle,select,textarea { border-radius:5px; }
+.btn { min-height:34px; }
+.btn.primary { color:#07140d; }
+:root[data-theme="light"] .btn.primary { color:#fff; }
+.home-welcome { padding:22px 2px 2px; }
+.home-welcome h2 { font-size:clamp(27px,3.5vw,36px); letter-spacing:-1.1px; }
+.home-welcome p { font-size:12px; }
+.home-cards { gap:12px; }
+.home-card { min-height:172px; padding:18px; border-radius:8px; background:var(--panel); }
+.home-card h3 { font-size:15px; margin:15px 0 6px; }
+.home-card p { font-size:11px; line-height:1.55; }
+.home-card:hover { transform:translateY(-1px); }
+.home-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.home-stat { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:13px 15px; border:1px solid var(--border); border-radius:7px; background:var(--panel); }
+.home-stat span { color:var(--muted); font-size:10px; }
+.home-stat strong { color:var(--text); font-size:18px; font-weight:650; font-variant-numeric:tabular-nums; }
+.home-recent-panel { margin:0; }
+.panel-link { color:var(--accent); font-size:10px; text-decoration:none; }
+.panel-link:hover { text-decoration:underline; }
+.recent-games,.library-list { display:grid; gap:8px; }
+.recent-game,.library-game { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:12px; padding:11px 12px; border:1px solid var(--border); border-radius:6px; background:var(--panel-soft); }
+.recent-game-title,.library-game-title { color:var(--text); font-size:11px; font-weight:650; }
+.recent-game-meta,.library-game-meta { margin-top:4px; color:var(--muted); font-size:9px; }
+.recent-game-actions,.library-game-actions { display:flex; flex-wrap:wrap; gap:6px; }
+.page-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; margin:20px 0 16px; }
+.page-heading h2 { margin:5px 0 5px; color:var(--text); font-size:25px; letter-spacing:-.6px; }
+.page-heading p { margin:0; color:var(--muted); font-size:11px; line-height:1.5; }
+.library-page { display:none; max-width:1040px; }
+html[data-page="library"] #library-page { display:block; }
+html[data-page="library"] #home-page,html[data-page="library"] #review-import,html[data-page="library"] #bot-lobby,html[data-page="library"] #workspace,html[data-page="library"] #review-panel,html[data-page="library"] #settings-page { display:none!important; }
+.daily-puzzle-panel { display:none; }
+.puzzle-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+.puzzle-rating { padding:9px 10px; border:1px solid var(--border); border-radius:5px; background:var(--panel-soft); }
+.puzzle-rating span { display:block; color:var(--muted); font-size:9px; }
+.puzzle-rating strong { display:block; margin-top:4px; color:var(--text); font-size:17px; font-weight:650; font-variant-numeric:tabular-nums; }
+.puzzle-themes { margin:12px 0; color:var(--muted); font-size:10px; line-height:1.5; }
+.puzzle-message { min-height:48px; padding:12px; border:1px solid var(--border); border-radius:6px; background:var(--panel-soft); color:var(--text-soft); font-size:11px; line-height:1.55; }
+.puzzle-actions { display:flex; flex-wrap:wrap; gap:6px; margin-top:11px; }
+.puzzle-source { margin-top:12px; color:var(--muted); font-size:9px; line-height:1.5; }
+.puzzle-source a { color:var(--accent); text-decoration:none; }
+.puzzle-source a:hover { text-decoration:underline; }
+html[data-page="puzzles"] #daily-puzzle-panel { display:block; }
+html[data-page="puzzles"] #home-page,html[data-page="puzzles"] #review-import,html[data-page="puzzles"] #bot-lobby,html[data-page="puzzles"] #review-panel,html[data-page="puzzles"] #settings-page,html[data-page="puzzles"] #library-page { display:none!important; }
+html[data-page="puzzles"] #workspace { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(270px,.75fr); }
+html[data-page="puzzles"] .side-column { display:block; }
+html[data-page="puzzles"] .engine-panel,html[data-page="puzzles"] .overview-panel,html[data-page="puzzles"] .moves-panel,html[data-page="puzzles"] .bot-chat-panel { display:none!important; }
+html[data-page="analysis"] #daily-puzzle-panel,html[data-page="play"] #daily-puzzle-panel,html[data-page="settings"] #daily-puzzle-panel,html[data-page="library"] #daily-puzzle-panel { display:none!important; }
+html[data-page="settings"] #home-page,html[data-page="settings"] #review-import,html[data-page="settings"] #bot-lobby,html[data-page="settings"] #workspace,html[data-page="settings"] #review-panel,html[data-page="settings"] #library-page { display:none!important; }
+html[data-page="settings"] #settings-page { display:block; }
+html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel { display:none!important; }
+.settings-page { max-width:880px; }
+.settings-group { border-radius:7px; }
+.stat-card,.meta-chip,.move-list,.review-table-wrap,.board-wrap { border-radius:6px; }
+@media(max-width:760px) {
+  .home-stats { grid-template-columns:1fr; }
+  .page-heading { align-items:flex-start; flex-direction:column; }
+  html[data-page="puzzles"] #workspace { grid-template-columns:1fr; }
+}
+@media(max-width:520px) {
+  .home-cards { grid-template-columns:1fr; }
+  .recent-game,.library-game { grid-template-columns:1fr; }
+  .recent-game-actions,.library-game-actions { justify-content:flex-start; }
+}
+
 </style>
 </head>
 <body>
@@ -464,6 +559,8 @@ html[data-page="settings"] #settings-page{display:block}
       <a href="#/home" data-page-link="home">Home</a>
       <a href="#/analysis" data-page-link="analysis">Analysis</a>
       <a href="#/play" data-page-link="play">Play</a>
+      <a href="#/puzzles" data-page-link="puzzles">Puzzles</a>
+      <a href="#/library" data-page-link="library">Library</a>
       <a href="#/settings" id="settings-btn" data-page-link="settings">Settings</a>
     </nav>
     <div class="legacy-mode-controls" aria-hidden="true">
@@ -481,17 +578,38 @@ html[data-page="settings"] #settings-page{display:block}
         <a class="home-card" href="#/analysis" data-page-link="analysis">
           <span class="home-card-number">01 / REVIEW</span>
           <h3>Analyse a game</h3>
-          <p>Load a PGN, step through the moves and use Stockfish to review the game.</p>
+          <p>Load a PGN, explore each position and review your moves with Stockfish.</p>
           <span class="home-card-action">Open analysis</span>
         </a>
         <a class="home-card" href="#/play" data-page-link="play">
           <span class="home-card-number">02 / PLAY</span>
           <h3>Play a computer opponent</h3>
-          <p>Choose an opponent, set your colour and play a game on the chessboard.</p>
+          <p>Choose from seven opponents with different playing styles and personalities.</p>
           <span class="home-card-action">Choose an opponent</span>
         </a>
+        <a class="home-card" href="#/puzzles" data-page-link="puzzles">
+          <span class="home-card-number">03 / PRACTICE</span>
+          <h3>Daily puzzle</h3>
+          <p>A new chess puzzle each day. Find the best moves and build a solving streak.</p>
+          <span class="home-card-action">Solve today's puzzle</span>
+        </a>
+        <a class="home-card" href="#/library" data-page-link="library">
+          <span class="home-card-number">04 / COLLECTION</span>
+          <h3>Game library</h3>
+          <p>Keep useful games on this device and return to them whenever you like.</p>
+          <span class="home-card-action">Open your library</span>
+        </a>
       </div>
-      <div class="home-note">The app runs in your browser. No account is needed, and games are not uploaded to a server.</div>
+      <div class="home-stats" id="home-stats">
+        <div class="home-stat"><span>Games saved</span><strong id="home-games-count">0</strong></div>
+        <div class="home-stat"><span>Puzzles solved</span><strong id="home-puzzles-count">0</strong></div>
+        <div class="home-stat"><span>Current streak</span><strong id="home-puzzle-streak">0 days</strong></div>
+      </div>
+      <section class="panel home-recent-panel">
+        <div class="panel-head"><div class="panel-title"><span class="eyebrow">RECENT ACTIVITY</span><h2>Continue where you left off</h2></div><a class="panel-link" href="#/library" data-page-link="library">View library</a></div>
+        <div class="panel-body"><div class="recent-games" id="home-recent-games"><div class="empty-state">Saved games will appear here.</div></div></div>
+      </section>
+      <div class="home-note">Games, preferences and progress are stored in this browser. The daily puzzle is provided by Lichess.</div>
     </section>
     <section class="settings-page" id="settings-page" aria-labelledby="settings-heading">
       <span class="eyebrow">PREFERENCES</span>
@@ -508,7 +626,18 @@ html[data-page="settings"] #settings-page{display:block}
         <div class="settings-field"><label for="settings-sound-toggle">Move sounds</label><button class="btn subtle" id="settings-sound-toggle" type="button">Sound off</button></div>
       </div>
     </section>
-<section class="panel import-panel" id="review-import">
+<section class="library-page" id="library-page" aria-labelledby="library-heading">
+      <div class="page-heading">
+        <div><span class="eyebrow">YOUR COLLECTION</span><h2 id="library-heading">Game library</h2><p>Games you save stay in this browser. You can reopen or download them at any time.</p></div>
+        <button class="btn" id="library-export-all" type="button">Export all games</button>
+      </div>
+      <div class="panel library-panel">
+        <div class="panel-head"><div class="panel-title"><span class="eyebrow">SAVED GAMES</span><h2>Your games</h2></div><span class="eyebrow" id="library-count">0 games</span></div>
+        <div class="panel-body"><div class="library-list" id="saved-games-list"><div class="empty-state">You have not saved any games yet.</div></div></div>
+      </div>
+    </section>
+
+    <section class="panel import-panel" id="review-import">
       <div class="panel-head">
         <div class="panel-title"><span class="eyebrow">GAME REVIEW</span><h2>Open a game</h2></div>
         <span class="eyebrow">PGN</span>
@@ -523,6 +652,7 @@ html[data-page="settings"] #settings-page{display:block}
           <div class="input-actions">
             <button class="btn primary" id="load-pgn-btn">Load game</button>
             <button class="btn" id="demo-btn">Example game</button>
+            <button class="btn subtle" id="save-game-btn" type="button">Save to library</button>
             <button class="btn subtle" id="clear-btn">New game</button>
           </div>
           <p class="import-message" id="import-message" role="status" aria-live="polite"></p>
@@ -628,7 +758,28 @@ html[data-page="settings"] #settings-page{display:block}
       </section>
 
       <aside class="side-column" aria-label="Game analysis">
-        <section class="panel engine-panel">
+        <section class="panel daily-puzzle-panel" id="daily-puzzle-panel" hidden>
+          <div class="panel-head">
+            <div class="panel-title"><span class="eyebrow">DAILY CHALLENGE</span><h2>Today's puzzle</h2></div>
+            <span class="eyebrow" id="daily-puzzle-date">Loading date</span>
+          </div>
+          <div class="panel-body">
+            <div class="puzzle-summary">
+              <div class="puzzle-rating"><span>Rating</span><strong id="daily-puzzle-rating">—</strong></div>
+              <div class="puzzle-rating"><span>Plays</span><strong id="daily-puzzle-plays">—</strong></div>
+              <div class="puzzle-rating"><span>Streak</span><strong id="daily-puzzle-streak">0</strong></div>
+            </div>
+            <div class="puzzle-themes" id="daily-puzzle-themes">Getting today's puzzle…</div>
+            <div class="puzzle-message" id="daily-puzzle-message" role="status" aria-live="polite">Loading today's puzzle.</div>
+            <div class="puzzle-actions">
+              <button class="btn" id="daily-puzzle-hint" type="button" disabled>Get a hint</button>
+              <button class="btn subtle" id="daily-puzzle-reset" type="button" disabled>Reset puzzle</button>
+              <button class="btn subtle" id="daily-puzzle-refresh" type="button">Refresh</button>
+            </div>
+            <div class="puzzle-source">Daily puzzle supplied by <a href="https://lichess.org/training/daily" target="_blank" rel="noreferrer">Lichess</a>. Puzzle data loads directly from its public API.</div>
+          </div>
+        </section>
+                <section class="panel engine-panel">
           <div class="panel-head">
             <div class="panel-title"><span class="eyebrow">ENGINE</span><h2>Position analysis</h2></div>
             <span class="eyebrow" id="engine-version">Stockfish 19</span>
