@@ -535,6 +535,11 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
   .recent-game-actions,.library-game-actions { justify-content:flex-start; }
 }
 
+
+.best-move-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;padding:10px 13px;border:1px solid var(--border);border-radius:6px;background:var(--panel-soft)}
+.best-move-row span{color:var(--muted);font-size:10px}
+.best-move-row strong{color:var(--accent);font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+html[data-page="puzzles"] .best-move-row{display:none}
 </style>
 </head>
 <body>
@@ -810,6 +815,7 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
               </div>
               <div class="score-side" id="eval-indicator">STOCKFISH</div>
             </div>
+            <div class="best-move-row"><span>Best move in this position</span><strong id="current-best-move">—</strong></div>
           </div>
         </section>
 
@@ -929,6 +935,7 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
     let selectedLegalMoves = [];
     let engineWorker = null;
     let analysisScores = [];
+    let analysisBestMoves = [];
     let analysisRunning = false;
     let analysisPosition = 0;
     let latestScore = null;
@@ -1109,6 +1116,7 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
       positions = [startFen, ...moves.map(move => move.after)];
       currentIndex = moves.length;
       analysisScores = [];
+      analysisBestMoves = [];
       stopAnalysis(false);
       renderAll(playMode ? botGameHeaders() : {});
       if (playMode && !game.isGameOver()) {
@@ -1253,6 +1261,20 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
         : `Stockfish · depth ${analysisDepth} · White POV`;
       $("eval-indicator").textContent = score == null ? "STOCKFISH" : score > 20 ? "WHITE +" : score < -20 ? "BLACK +" : "EQUAL";
       $("eval-indicator").style.color = score == null ? "var(--accent)" : score > 20 ? "var(--accent)" : score < -20 ? "var(--blue)" : "var(--muted)";
+
+      let bestSan = "—";
+      const bestUci = analysisBestMoves[currentIndex];
+      if (bestUci && positions[currentIndex]) {
+        try {
+          const position = new Chess(positions[currentIndex]);
+          const legal = uciToLegalMove(position, bestUci);
+          if (legal) {
+            const played = position.move(legal);
+            if (played) bestSan = played.san;
+          }
+        } catch (_) {}
+      }
+      $("current-best-move").textContent = bestSan;
     }
 
     function updateAnalysisProgress(done, total, message) {
@@ -2187,6 +2209,7 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
       const myToken = engineToken;
       analysisDepth = Number($("depth-select").value) || 10;
       analysisScores = Array(positions.length).fill(null);
+      analysisBestMoves = Array(positions.length).fill(null);
       analysisRunning = true;
       analysisPosition = 0;
       latestScore = null;
@@ -2255,6 +2278,8 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
         }
         if (line.startsWith("bestmove")) {
           analysisScores[analysisPosition] = latestScore ?? 0;
+          const bestUci = line.split(/\s+/)[1];
+          analysisBestMoves[analysisPosition] = bestUci && bestUci !== "(none)" && bestUci !== "0000" ? bestUci : null;
           const complete = analysisPosition + 1;
           updateAnalysisProgress(complete, positions.length, `Analysing position ${complete} of ${positions.length} · depth ${analysisDepth}`);
           if (complete < positions.length) {
@@ -2278,6 +2303,7 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
       if (token !== engineToken || !engineWorker) return;
       analysisPosition = index;
       latestScore = null;
+      analysisBestMoves[index] = null;
       engineWorker.postMessage(`position fen ${positions[index]}`);
       engineWorker.postMessage(`go depth ${analysisDepth}`);
       updateAnalysisProgress(index, positions.length, `Analysing position ${index + 1} of ${positions.length} · depth ${analysisDepth}`);
