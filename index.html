@@ -751,6 +751,7 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
             </select>
             <button class="btn subtle" id="copy-fen-btn" type="button">Copy FEN</button>
             <button class="btn subtle" id="download-pgn-btn" type="button">Save PGN</button>
+            <button class="btn subtle" id="save-board-game-btn" type="button">Save game</button>
             <button class="btn subtle" id="takeback-btn" type="button" hidden>Take back</button>
             <button class="btn subtle" id="sound-toggle" type="button" aria-pressed="false">Sound off</button>
           </div>
@@ -1926,6 +1927,8 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
       if (puzzleLoading) return;
       const today = utcDayKey();
       if (!force && puzzleSession && puzzleSession.date === today) return;
+      stopBotWorker();
+      stopAnalysis(false);
       puzzleLoading = true;
       const requestId = ++puzzleRequestToken;
       $("daily-puzzle-date").textContent = today;
@@ -1939,7 +1942,9 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
           cache: "no-store"
         });
         if (!response.ok) throw new Error("Puzzle service returned " + response.status + ".");
-        const payload = validateDailyPuzzle(await response.json());
+        const rawPayload = await response.json();
+        const payload = validateDailyPuzzle(rawPayload);
+        try { localStorage.setItem("aca-daily-puzzle-cache", JSON.stringify({ date: today, payload: rawPayload })); } catch (_) {}
         if (requestId !== puzzleRequestToken) return;
         puzzleSession = {
           id: payload.puzzle.id,
@@ -1994,10 +1999,20 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
           };
           startFen = puzzleSession.startFen;
           moves = []; positions = [startFen]; currentIndex = 0; game = new Chess(startFen);
-          if (board) board.position(game.fen(), true);
+          boardFlipped = game.turn() === "b";
+          if (board) {
+            board.orientation(boardFlipped ? "black" : "white");
+            board.position(game.fen(), true);
+            board.resize();
+          }
+          $("daily-puzzle-date").textContent = today;
+          $("daily-puzzle-rating").textContent = String(puzzleSession.rating || "—");
+          $("daily-puzzle-plays").textContent = Number(puzzleSession.plays || 0).toLocaleString();
+          $("daily-puzzle-themes").textContent = (puzzleSession.themes || []).slice(0, 5).join(" · ");
           setDailyPuzzleMessage("Using the saved copy of today's puzzle. The live feed could not be reached.", "hint");
           $("daily-puzzle-hint").disabled = false;
           $("daily-puzzle-reset").disabled = true;
+          renderPositionInfo();
         } else {
           setDailyPuzzleMessage("Today's puzzle could not be loaded. Check your connection and use Refresh to try again.", "error");
         }
@@ -2544,6 +2559,7 @@ html[data-page="home"] #library-page,html[data-page="home"] #daily-puzzle-panel 
     updateSoundButtons();
     $("download-pgn-btn").addEventListener("click", downloadCurrentPgn);
     $("save-game-btn").addEventListener("click", saveCurrentGameToLibrary);
+    $("save-board-game-btn").addEventListener("click", saveCurrentGameToLibrary);
     $("library-export-all").addEventListener("click", exportAllSavedGames);
     $("daily-puzzle-hint").addEventListener("click", showDailyPuzzleHint);
     $("daily-puzzle-reset").addEventListener("click", resetDailyPuzzle);
