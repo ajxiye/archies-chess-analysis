@@ -49,6 +49,15 @@ select,input,textarea{min-height:35px;padding:7px 10px;border:1px solid var(--bo
 :root[data-page="home"] .workspace,:root[data-page="home"] .import-panel,:root[data-page="home"] .bot-lobby,:root[data-page="home"] .review-panel,:root[data-page="library"] .workspace,:root[data-page="library"] .import-panel,:root[data-page="library"] .bot-lobby,:root[data-page="library"] .review-panel,:root[data-page="settings"] .workspace,:root[data-page="settings"] .import-panel,:root[data-page="settings"] .bot-lobby,:root[data-page="settings"] .review-panel{display:none!important}:root[data-page="play"] .import-panel,:root[data-page="play"] .engine-panel,:root[data-page="play"] .overview-panel,:root[data-page="play"] .moves-panel,:root[data-page="play"] .review-panel{display:none!important}:root[data-page="puzzles"] .engine-panel,:root[data-page="puzzles"] .overview-panel,:root[data-page="puzzles"] .moves-panel,:root[data-page="puzzles"] .bot-chat-panel,:root[data-page="puzzles"] .review-panel,:root[data-page="puzzles"] .import-panel{display:none!important}:root[data-page="puzzles"] .daily-puzzle-panel{display:block!important}:root[data-page="analysis"] .bot-chat-panel,:root[data-page="analysis"] .daily-puzzle-panel{display:none!important}
 @media(max-width:1080px){.workspace{grid-template-columns:minmax(0,1fr) 330px}.home-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.bot-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:780px){.app{width:min(100% - 28px,680px)}.topbar{min-height:66px}.privacy-pill{display:none}.page-nav{min-height:52px;overflow-x:auto;scrollbar-width:none}.page-nav::-webkit-scrollbar{display:none}.page-nav a{padding:8px 10px;flex:0 0 auto}.workspace{grid-template-columns:minmax(0,1fr);gap:12px;margin-top:14px}.side-column{display:grid;grid-template-columns:minmax(0,1fr)}.board-wrap{width:min(100% - 28px,620px)}.board-footer{align-items:flex-start}.board-status{width:100%}.shortcut-hint{display:none}.import-layout{grid-template-columns:1fr}.import-panel,.review-panel,.bot-lobby{margin-top:12px}.settings-page,.library-page,.home-page{margin-top:20px}.footer{margin-top:20px}}@media(max-width:520px){.app{width:min(100% - 20px,480px)}.brand{gap:8px}.brand-mark{width:30px;height:30px}.brand h1{font-size:14px}.tagline{display:none}.topbar-actions{gap:5px}.utility-btn,.theme-toggle{min-height:32px;padding:6px 8px;font-size:10px}.page-nav a{gap:6px;padding:7px 8px;font-size:11px}.page-nav .aca-icon{width:13px;height:13px}.board-top{padding:13px 12px 10px}.board-wrap{width:calc(100% - 20px)}.board-footer{padding:10px 10px 8px}.board-controls{gap:4px}.board-controls .btn{padding:6px 7px}.board-tools{padding:10px;gap:5px}.board-tools label{width:100%}.board-tools select{flex:1 1 100%}.panel-head{padding:13px}.panel-body{padding:13px}.home-cards{grid-template-columns:1fr}.home-card{min-height:150px}.home-stats{gap:6px}.home-stat{padding:10px}.home-stat strong{font-size:17px}.bot-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bot-lobby-bottom{align-items:stretch;flex-direction:column}.page-heading{align-items:flex-start;flex-direction:column}.page-heading .btn{width:100%}.saved-game-row{align-items:flex-start;flex-direction:column}.settings-field{grid-template-columns:1fr;gap:6px}.settings-field select{width:100%}.turn-indicator{max-width:46%;padding:5px 7px;font-size:10px}.puzzle-actions .btn{flex:1 1 calc(50% - 4px)}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
+
+:root:not([data-page="home"]) #home-page{display:none!important}
+:root:not([data-page="library"]) #library-page{display:none!important}
+:root:not([data-page="settings"]) #settings-page{display:none!important}
+.aca-board-markers{position:absolute;inset:0;z-index:4;pointer-events:none}
+.aca-legal-dot,.aca-legal-capture-ring{position:absolute;width:12.5%;height:12.5%;pointer-events:none}
+.aca-legal-dot::after{content:"";position:absolute;left:50%;top:50%;width:26%;height:26%;border-radius:50%;background:rgba(0,0,0,.25);transform:translate(-50%,-50%)}
+.aca-legal-capture-ring::after{content:"";position:absolute;left:50%;top:50%;width:84%;height:84%;border:5px solid rgba(0,0,0,.25);border-radius:50%;transform:translate(-50%,-50%)}
+
 </style>
 </head>
 <body>
@@ -269,7 +278,7 @@ ion>
               <button class="btn subtle" id="daily-puzzle-reset" type="button" data-icon="rotate-ccw" disabled>Retry</button>
               <button class="btn subtle" id="daily-puzzle-refresh" type="button" data-icon="arrow-right">Next puzzle</button>
             </div>
-            <div class="puzzle-source">Daily puzzle supplied by <a href="https://lichess.org/training/daily" target="_blank" rel="noreferrer">Lichess</a>. Puzzle data loads directly from its public API.</div>
+            <div class="puzzle-source">Daily puzzles are provided by <a href="https://lichess.org/training/daily" target="_blank" rel="noreferrer">Lichess</a>. The tactics set is built into this app.</div>
           </div>
         </section>
                 <section class="panel engine-panel">
@@ -395,7 +404,7 @@ ion>
 
     <footer class="footer">
       <span>Archie's Chess Analysis</span>
-      <span>Uses <a href="https://github.com/jhlywa/chess.js" target="_blank" rel="noreferrer">chess.js</a>, <a href="https://chessboardjs.com/" target="_blank" rel="noreferrer">chessboard.js</a> and <a href="https://github.com/official-stockfish/Stockfish" target="_blank" rel="noreferrer">Stockfish</a>.</span>
+      <span>Uses <a href="https://github.com/jhlywa/chess.js" target="_blank" rel="noreferrer">chess.js</a>, a browser-native chessboard and <a href="https://github.com/official-stockfish/Stockfish" target="_blank" rel="noreferrer">Stockfish</a>.</span>
     </footer>
   </main>
 
@@ -1814,6 +1823,8 @@ ion>
       });
       $("puzzle-panel-title").textContent=puzzleMode==="tactics"?"Tactics trainer":"Daily puzzle";
       $("daily-puzzle-refresh").textContent=puzzleMode==="tactics"?"Next puzzle":"Refresh daily";
+      $("daily-puzzle-refresh").dataset.icon="arrow-right";
+      if(window.ACAIcons)window.ACAIcons();
       if(puzzleMode==="tactics"){
         if(!changed&&puzzleSession&&puzzleSession.source==="tactics")return;
         loadTacticalPuzzle(tacticalPuzzleIndex);
@@ -1960,6 +1971,7 @@ ion>
           button.setAttribute("aria-pressed", String(soundEnabled));
         }
       }
+      if(window.ACAIcons)window.ACAIcons();
     }
 
     function toggleSound() {
@@ -2185,34 +2197,33 @@ ion>
       boardElement.querySelectorAll(".aca-legal-dot, .aca-legal-capture-ring").forEach(marker => marker.remove());
     }
 
-    function paintBoardSelection() {
-      const boardElement = $("board");
-      if (!boardElement) return;
-      boardElement.querySelectorAll(".aca-selected-square").forEach(square => {
-        square.classList.remove("aca-selected-square");
-      });
-      boardElement.querySelectorAll(".aca-legal-dot, .aca-legal-capture-ring").forEach(marker => marker.remove());
-      if (!selectedSquare) return;
-
-      const source = getBoardSquareElement(selectedSquare);
-      if (source) source.classList.add("aca-selected-square");
-
-      const destinations = new Map();
-      for (const move of selectedLegalMoves) {
-        const previous = destinations.get(move.to);
-        const isCapture = Boolean(move.captured);
-        destinations.set(move.to, isCapture || previous === "capture" ? "capture" : "quiet");
+    function paintBoardSelection(){
+      const boardElement=$("board");if(!boardElement)return;
+      boardElement.querySelectorAll(".aca-selected-square").forEach(square=>square.classList.remove("aca-selected-square"));
+      const markerLayer=boardElement.querySelector(".aca-board-markers");
+      if(markerLayer)markerLayer.replaceChildren();
+      if(!selectedSquare)return;
+      const source=getBoardSquareElement(selectedSquare);if(source)source.classList.add("aca-selected-square");
+      if(!markerLayer)return;
+      const destinations=new Map();
+      for(const move of selectedLegalMoves){
+        const previous=destinations.get(move.to),isCapture=Boolean(move.captured);
+        destinations.set(move.to,isCapture||previous==="capture"?"capture":"quiet");
       }
-
-      for (const [squareName, kind] of destinations) {
-        const square = getBoardSquareElement(squareName);
-        if (!square) continue;
-        const marker = document.createElement("span");
-        marker.className = kind === "capture" ? "aca-legal-capture-ring" : "aca-legal-dot";
-        marker.setAttribute("aria-hidden", "true");
-        square.appendChild(marker);
+      const orientation=board&&board.orientation?board.orientation():"white";
+      for(const [squareName,kind] of destinations){
+        const file=squareName.charCodeAt(0)-97,rank=Number(squareName[1]);
+        const x=orientation==="black"?7-file:file;
+        const y=orientation==="black"?rank-1:8-rank;
+        const marker=document.createElement("span");
+        marker.className=kind==="capture"?"aca-legal-capture-ring":"aca-legal-dot";
+        marker.style.left=(x*12.5)+"%";
+        marker.style.top=(y*12.5)+"%";
+        marker.setAttribute("aria-hidden","true");
+        markerLayer.append(marker);
       }
     }
+
 
     function selectBoardSquare(squareName) {
       const piece = game.get(squareName);
