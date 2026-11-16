@@ -22,12 +22,6 @@ separate program and keeps its own licence.
 - Licence: BSD 2-Clause
 - Source and licence: https://github.com/jhlywa/chess.js
 
-## chessboard.js 1.0.0
-
-- Use: interactive chessboard
-- Licence: MIT
-- Source and licence: https://github.com/oakmac/chessboardjs
-
 ## Cburnett chess piece artwork (SVG)
 
 - Use: vector chess piece images displayed on the board
@@ -39,11 +33,6 @@ separate program and keeps its own licence.
 The app loads the SVG pieces from the Lichess source repository. The artwork
 retains its own licence and is separate from the MIT-licensed application code.
 
-## jQuery 3.7.1
-
-- Use: required by chessboard.js
-- Licence: MIT
-- Source and licence: https://jquery.com/license/
-
-These libraries are loaded from their public CDNs when the page opens. An
-internet connection is required to load them and the Stockfish engine.
+The app loads chess.js and the Cburnett SVG artwork from public CDNs when the
+page opens. The Stockfish engine is also downloaded for browser analysis. An
+internet connection is required for these external assets and engine files.
