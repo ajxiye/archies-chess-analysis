@@ -23,6 +23,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.5.0/assets/chessground.base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.5.0/assets/chessground.cburnett.css">
 
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;650;700;750;800&display=swap');
@@ -447,6 +449,63 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
+
+/* Chessground board skin: native Chessground DOM, site-owned colours */
+#board.cg-wrap{
+  display:block;
+  position:relative;
+  width:100%;
+  height:auto;
+  aspect-ratio:1;
+  margin:0 auto;
+  overflow:visible;
+  border:0;
+  border-radius:6px;
+  background:transparent;
+  touch-action:none;
+  user-select:none;
+}
+#board.cg-wrap cg-container{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  border-radius:6px;
+}
+#board.cg-wrap cg-board{
+  overflow:hidden;
+  border-radius:6px;
+  background-color:var(--aca-square-light,#e4e8df);
+  background-image:conic-gradient(var(--aca-square-light,#e4e8df) 25%,var(--aca-square-dark,#83a17d) 0 50%,var(--aca-square-light,#e4e8df) 0 75%,var(--aca-square-dark,#83a17d) 0);
+  background-size:25% 25%;
+}
+#board.cg-wrap cg-board square.last-move{background-color:rgba(246,211,79,.36)}
+#board.cg-wrap cg-board square.selected{background-color:rgba(246,211,79,.53)}
+#board.cg-wrap cg-board square.move-dest{
+  background:radial-gradient(circle,rgba(25,44,31,.34) 19%,transparent 21%);
+}
+#board.cg-wrap cg-board square.oc.move-dest{
+  background:radial-gradient(circle,transparent 0 66%,rgba(25,44,31,.34) 68% 81%,transparent 83%);
+}
+#board.cg-wrap cg-board square.move-dest:hover{background:rgba(30,52,36,.19)}
+#board.cg-wrap cg-board square.check{
+  background:radial-gradient(ellipse at center,rgba(221,73,67,.92) 0%,rgba(221,73,67,.43) 55%,transparent 100%);
+}
+#board.cg-wrap cg-board piece{cursor:grab}
+#board.cg-wrap cg-board piece.dragging{cursor:grabbing}
+#board.cg-wrap coords{
+  font-family:var(--font)!important;
+  font-size:clamp(8px,1vw,11px)!important;
+  font-weight:700;
+  opacity:.92;
+}
+#board.cg-wrap coords.squares coord{padding:5% 6%}
+#board.cg-wrap coords.squares .coord-light{color:rgba(25,39,29,.72)}
+#board.cg-wrap coords.squares .coord-dark{color:rgba(247,249,241,.88)}
+#board-wrap[data-board-theme="green"]{--aca-square-light:#e5e9df;--aca-square-dark:#86a77f}
+#board-wrap[data-board-theme="blue"]{--aca-square-light:#e3eaec;--aca-square-dark:#86a6b7}
+#board-wrap[data-board-theme="walnut"]{--aca-square-light:#f0dfc4;--aca-square-dark:#b68b64}
+#board-wrap[data-board-theme="slate"]{--aca-square-light:#e2e7e6;--aca-square-dark:#849da0}
+:root[data-motion="off"] #board.cg-wrap cg-board piece{transition:none!important}
 </style>
 </head>
 <body>
@@ -831,6 +890,7 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
 
   <script type="module">
     import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm";
+    import { Chessground } from "https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.5.0/+esm";
 
     const $ = (id) => document.getElementById(id);
 
@@ -878,7 +938,6 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
       { label: "jsDelivr mirror", base: "https://fastly.jsdelivr.net/npm/stockfish@19.0.1/", file: "stockfish-19-lite-single.js", wasm: true },
       { label: "ASM-JS fallback", base: "https://cdn.jsdelivr.net/npm/stockfish@19.0.1/", file: "stockfish-19-asm.js", wasm: false }
     ];
-    const PIECE_THEME = "https://raw.githubusercontent.com/lichess-org/lila/master/public/piece/cburnett/{piece}.svg";
     const TACTICAL_PUZZLES = [
   {
     "id": "fork-queen",
@@ -1054,11 +1113,9 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
     let positions = [START_FEN];
     let currentIndex = 0;
     let board = null;
+    let chessgroundApi = null;
     let boardFlipped = false;
     let pendingPromotion = null;
-    let selectedSquare = null;
-    let selectedLegalMoves = [];
-    let suppressNextBoardClick = false;
     let engineWorker = null;
     let analysisScores = [];
     let analysisAlternativeScores = [];
@@ -1086,7 +1143,6 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
     let puzzleRequestToken = 0;
     let puzzleMode = "daily";
     let tacticalPuzzleIndex = 0;
-    let boardDragState = null;
     let importPanelOpen = false;
     let reviewPanelOpen = false;
 
@@ -2751,78 +2807,48 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
       return !playMode || game.turn() === playerColor;
     }
 
-    function getBoardSquareElement(squareName) {
-      const boardElement = $("board");
-      if (!boardElement) return null;
-      const direct = boardElement.querySelector('[data-square="' + squareName + '"]');
-      if (direct) return direct;
-      return Array.from(boardElement.querySelectorAll(".square-55d63")).find(square => {
-        const id = square.id || "";
-        return id === squareName || id === "square-" + squareName;
-      }) || null;
+    function chessgroundColor(color) {
+      return color === "w" || color === "white" ? "white" : "black";
     }
 
-    function paintLastMoveHighlight(){
-      const el=$("board");if(!el||!game||typeof game.history!=="function")return;
-      el.querySelectorAll(".aca-last-move").forEach(s=>s.classList.remove("aca-last-move"));
-      const move=game.history({verbose:true}).slice(-1)[0];if(!move)return;
-      const from=getBoardSquareElement(move.from),to=getBoardSquareElement(move.to);
-      if(from)from.classList.add("aca-last-move");if(to)to.classList.add("aca-last-move");
+    function legalDestinations(position = game) {
+      const destinations = new Map();
+      if (!canHumanMoveOnBoard()) return destinations;
+      for (const move of position.moves({ verbose: true })) {
+        if (!destinations.has(move.from)) destinations.set(move.from, []);
+        const squares = destinations.get(move.from);
+        if (!squares.includes(move.to)) squares.push(move.to);
+      }
+      return destinations;
     }
 
     function clearBoardSelection() {
       selectedSquare = null;
       selectedLegalMoves = [];
-      const boardElement = $("board");
-      if (!boardElement) return;
-      boardElement.querySelectorAll(".aca-selected-square").forEach(square => {
-        square.classList.remove("aca-selected-square");
+      if (chessgroundApi) chessgroundApi.selectSquare(null);
+    }
+
+    function syncChessground(fen = game.fen(), animate = false) {
+      if (!chessgroundApi) return;
+      const history = game.history({ verbose: true });
+      const last = history.length ? history[history.length - 1] : null;
+      chessgroundApi.set({
+        fen,
+        orientation: boardFlipped ? "black" : "white",
+        turnColor: chessgroundColor(game.turn()),
+        check: game.isCheck() ? chessgroundColor(game.turn()) : false,
+        lastMove: last ? [last.from, last.to] : undefined,
+        highlight: { lastMove: true, check: true },
+        animation: { enabled: Boolean(animate), duration: 190 },
+        movable: {
+          free: false,
+          color: chessgroundColor(game.turn()),
+          dests: legalDestinations(game),
+          showDests: true,
+          events: { after: handleChessgroundMove }
+        },
+        premovable: { enabled: false }
       });
-      boardElement.querySelectorAll(".aca-legal-dot, .aca-legal-capture-ring").forEach(marker => marker.remove());
-    }
-
-    function paintBoardSelection(){
-      const boardElement=$("board");if(!boardElement)return;
-      boardElement.querySelectorAll(".aca-selected-square").forEach(square=>square.classList.remove("aca-selected-square"));
-      const markerLayer=boardElement.querySelector(".aca-board-markers");
-      if(markerLayer)markerLayer.replaceChildren();
-      if(!selectedSquare)return;
-      const source=getBoardSquareElement(selectedSquare);if(source)source.classList.add("aca-selected-square");
-      if(!markerLayer)return;
-      const destinations=new Map();
-      for(const move of selectedLegalMoves){
-        const previous=destinations.get(move.to),isCapture=Boolean(move.captured);
-        destinations.set(move.to,isCapture||previous==="capture"?"capture":"quiet");
-      }
-      const orientation=board&&board.orientation?board.orientation():"white";
-      for(const [squareName,kind] of destinations){
-        const file=squareName.charCodeAt(0)-97,rank=Number(squareName[1]);
-        const x=orientation==="black"?7-file:file;
-        const y=orientation==="black"?rank-1:8-rank;
-        const marker=document.createElement("span");
-        marker.className=kind==="capture"?"aca-legal-capture-ring":"aca-legal-dot";
-        marker.style.left=(x*12.5)+"%";
-        marker.style.top=(y*12.5)+"%";
-        marker.setAttribute("aria-hidden","true");
-        markerLayer.append(marker);
-      }
-    }
-
-
-    function selectBoardSquare(squareName) {
-      const piece = game.get(squareName);
-      if (!piece || piece.color !== game.turn()) {
-        clearBoardSelection();
-        return;
-      }
-      const legalMoves = game.moves({ square: squareName, verbose: true });
-      if (!legalMoves.length) {
-        clearBoardSelection();
-        return;
-      }
-      selectedSquare = squareName;
-      selectedLegalMoves = legalMoves;
-      paintBoardSelection();
     }
 
     function playMoveFromBoard(from, to, promotion, animateBoard = true) {
@@ -2841,169 +2867,75 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
       }
     }
 
-    function handleBoardSquareClick(event) {
-      if (suppressNextBoardClick) {
-        suppressNextBoardClick = false;
-        event.preventDefault();
-        return;
-      }
-      const target = event.target.closest(".square-55d63, [data-square]");
-      const boardElement = $("board");
-      if (!target || !boardElement.contains(target) || !canHumanMoveOnBoard()) return;
-
-      const squareName = target.getAttribute("data-square") || target.id.replace(/^square-/, "");
-      if (!/^[a-h][1-8]$/.test(squareName)) return;
-      const piece = game.get(squareName);
-
-      if (!selectedSquare) {
-        if (piece && piece.color === game.turn()) selectBoardSquare(squareName);
+    function handleChessgroundMove(from, to) {
+      if (!canHumanMoveOnBoard()) {
+        board.position(game.fen(), false);
         return;
       }
 
-      if (squareName === selectedSquare) {
-        clearBoardSelection();
-        return;
-      }
-
-      const matchingMoves = selectedLegalMoves.filter(move => move.to === squareName);
-      if (matchingMoves.length) {
-        const promotionMoves = matchingMoves.filter(move => move.promotion);
-        if (promotionMoves.length) {
-          pendingPromotion = { from: selectedSquare, to: squareName };
-          clearBoardSelection();
-          openPromotionModal(selectedSquare, squareName);
-          return;
-        }
-        const from = selectedSquare;
-        clearBoardSelection();
-        playMoveFromBoard(from, squareName);
-        return;
-      }
-
-      if (piece && piece.color === game.turn()) {
-        selectBoardSquare(squareName);
-      } else {
-        clearBoardSelection();
-      }
-    }
-
-    function afterHumanMove(animateBoard = true) {
-      pendingPromotion = null;
-      closePromotionModal();
-      const lastMove = game.history({ verbose: true }).slice(-1)[0];
-      playMoveSound(Boolean(lastMove && lastMove.captured));
-      updateGameFromCurrent(animateBoard);
-    }
-
-    function tryBoardMove(source, target, piece) {
-      if (!canHumanMoveOnBoard()) return "snapback";
-      suppressNextBoardClick = true;
-      window.setTimeout(() => { suppressNextBoardClick = false; }, 0);
-      const isPawn = piece.toLowerCase().endsWith("p");
-      const isPromotion = isPawn && (target[1] === "1" || target[1] === "8");
+      const movingPiece = game.get(from);
+      const isPromotion = movingPiece && movingPiece.type === "p" && (to[1] === "1" || to[1] === "8");
       if (isPromotion) {
-        clearBoardSelection();
-        pendingPromotion = { from: source, to: target };
-        openPromotionModal(source, target);
-        return "snapback";
+        openPromotionModal(from, to);
+        board.position(game.fen(), false);
+        return;
       }
-      return playMoveFromBoard(source, target, undefined, true) ? undefined : "snapback";
+
+      if (!playMoveFromBoard(from, to, undefined, true)) {
+        board.position(game.fen(), false);
+      }
     }
 
-    function initializeBoard(){
-      const root=$("board"); if(!root)return;
-      root.replaceChildren(); root.classList.add("aca-board"); root.setAttribute("role","grid"); root.setAttribute("aria-label","Interactive chess board");
-      let orientation="white"; const squaresLayer=document.createElement("div"); squaresLayer.className="aca-board-squares";
-      const piecesLayer=document.createElement("div"); piecesLayer.className="aca-board-pieces"; piecesLayer.setAttribute("aria-hidden","true"); const markersLayer=document.createElement("div"); markersLayer.className="aca-board-markers"; markersLayer.setAttribute("aria-hidden","true"); root.append(squaresLayer,piecesLayer,markersLayer);
-      function coordinates(square){const file=square.charCodeAt(0)-97,rank=Number(square[1])-1;return{x:orientation==="white"?file:7-file,y:orientation==="white"?7-rank:rank};}
-      function transformForSquare(square,dx=0,dy=0){const p=coordinates(square);return `translate3d(calc(${p.x*100}% + ${dx}px), calc(${p.y*100}% + ${dy}px), 0)`;}
-      function buildSquares(){
-        squaresLayer.replaceChildren();const files=orientation==="white"?"abcdefgh":"hgfedcba",ranks=orientation==="white"?"87654321":"12345678";
-        for(let row=0;row<8;row++)for(let col=0;col<8;col++){
-          const file=files[col],rank=ranks[row],name=file+rank,square=document.createElement("div");
-          square.className="square-55d63 "+((file.charCodeAt(0)-97+Number(rank))%2===0?"aca-light":"aca-dark");
-          square.id="square-"+name;square.dataset.square=name;square.setAttribute("role","gridcell");square.setAttribute("aria-label",name);
-          if(col===0){const label=document.createElement("span");label.className="aca-rank-label";label.textContent=rank;square.append(label);}
-          if(row===7){const label=document.createElement("span");label.className="aca-file-label";label.textContent=file;square.append(label);}
-          squaresLayer.append(square);
+    function initializeBoard() {
+      const root = $("board");
+      if (!root) return;
+      root.classList.add("cg-wrap");
+      root.setAttribute("role", "application");
+      root.setAttribute("aria-label", "Interactive chess board");
+
+      chessgroundApi = Chessground(root, {
+        fen: game.fen(),
+        orientation: boardFlipped ? "black" : "white",
+        turnColor: chessgroundColor(game.turn()),
+        coordinates: true,
+        coordinatesOnSquares: true,
+        highlight: { lastMove: true, check: true },
+        animation: { enabled: true, duration: 190 },
+        movable: {
+          free: false,
+          color: chessgroundColor(game.turn()),
+          dests: legalDestinations(game),
+          showDests: true,
+          events: { after: handleChessgroundMove }
+        },
+        premovable: { enabled: false },
+        draggable: {
+          enabled: true,
+          distance: 3,
+          autoDistance: true,
+          showGhost: true,
+          deleteOnDropOff: false
+        },
+        selectable: { enabled: true },
+        drawable: { enabled: false, visible: false }
+      });
+
+      board = {
+        position(fen, animate = false) {
+          syncChessground(fen, Boolean(animate));
+          return this;
+        },
+        orientation(value) {
+          if (value === undefined) return boardFlipped ? "black" : "white";
+          boardFlipped = value === "black";
+          syncChessground(game.fen(), false);
+          return this;
+        },
+        resize() {
+          if (chessgroundApi) chessgroundApi.redrawAll();
+          return this;
         }
-      }
-      function parseFen(fen){
-        const rows=String(fen||"").split(/\s+/)[0].split("/"),pieces=new Map();if(rows.length!==8)return pieces;
-        for(let row=0;row<8;row++){let file=0;for(const token of rows[row]){
-          if(/\d/.test(token)){file+=Number(token);continue;}if(file>7)break;
-          pieces.set("abcdefgh"[file]+String(8-row),(token===token.toUpperCase()?"w":"b")+token.toUpperCase());file++;
-        }}return pieces;
-      }
-      function makePiece(square,code){
-        const img=document.createElement("img");img.className="aca-piece";img.alt="";img.draggable=false;img.dataset.piece=code;img.dataset.square=square;
-        img.src=PIECE_THEME.replace("{piece}",code);img.onerror=()=>{img.alt=code;};return img;
-      }
-      function renderPosition(fen,animate){
-        const desired=parseFen(fen),current=new Map(Array.from(piecesLayer.querySelectorAll(".aca-piece")).map(p=>[p.dataset.square,p]));
-        const assigned=new Map(),last=animate&&game?game.history({verbose:true}).slice(-1)[0]:null;
-        if(last){
-          const mover=current.get(last.from);if(mover)assigned.set(last.to,mover);
-          if(last.flags&&(last.flags.includes("k")||last.flags.includes("q"))){
-            const rank=last.color==="w"?"1":"8",kingSide=last.flags.includes("k"),from=(kingSide?"h":"a")+rank,to=(kingSide?"f":"d")+rank,rook=current.get(from);
-            if(rook)assigned.set(to,rook);
-          }
-        }
-        const used=new Set();
-        for(const [square,code] of desired){
-          let piece=assigned.get(square);
-          if(!piece){const old=current.get(square);if(old&&old.dataset.piece===code&&!used.has(old))piece=old;}
-          if(!piece)piece=makePiece(square,code);
-          piece.dataset.square=square;piece.dataset.piece=code;piece.src=PIECE_THEME.replace("{piece}",code);
-          piece.style.transition=animate?"":"none";piece.style.transform=transformForSquare(square);piece.classList.remove("aca-dragging");
-          piecesLayer.append(piece);used.add(piece);
-        }
-        for(const piece of current.values())if(!used.has(piece))piece.remove();
-        if(!animate)requestAnimationFrame(()=>piecesLayer.querySelectorAll(".aca-piece").forEach(p=>p.style.transition=""));
-        paintBoardSelection();paintLastMoveHighlight();
-      }
-      buildSquares();
-      board={
-        position(fen,animate=false){renderPosition(fen,Boolean(animate));return this;},
-        orientation(value){if(value===undefined)return orientation;orientation=value==="black"?"black":"white";root.dataset.orientation=orientation;buildSquares();renderPosition(game.fen(),false);return this;},
-        resize(){return this;}
       };
-      root.addEventListener("click",handleBoardSquareClick);
-      root.addEventListener("pointerdown",event=>{
-        if(event.button!==undefined&&event.button!==0)return;const square=event.target.closest(".square-55d63");
-        if(!square||!root.contains(square)||!canHumanMoveOnBoard())return;
-        const source=square.dataset.square,piece=game.get(source);
-        if(!piece||piece.color!==game.turn()||!game.moves({square:source}).length)return;
-        boardDragState={source,pieceCode:piece.color+piece.type.toUpperCase(),pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,moved:false,image:piecesLayer.querySelector('[data-square="'+source+'"]')};
-        try{square.setPointerCapture(event.pointerId);}catch(_){}
-      });
-      root.addEventListener("pointermove",event=>{
-        if(!boardDragState||event.pointerId!==boardDragState.pointerId)return;
-        const dx=event.clientX-boardDragState.startX,dy=event.clientY-boardDragState.startY;
-        if(!boardDragState.moved&&Math.hypot(dx,dy)<5)return;boardDragState.moved=true;
-        if(boardDragState.image){boardDragState.image.classList.add("aca-dragging");boardDragState.image.style.transform=transformForSquare(boardDragState.source,dx,dy);}
-      });
-      root.addEventListener("pointerup",event=>{
-        if(!boardDragState||event.pointerId!==boardDragState.pointerId)return;const drag=boardDragState;boardDragState=null;if(!drag.moved)return;
-        const found=document.elementFromPoint(event.clientX,event.clientY),target=found&&found.closest?found.closest(".square-55d63"):null;
-        const destination=target&&root.contains(target)?target.dataset.square:"";
-        const result=destination?tryBoardMove(drag.source,destination,drag.pieceCode):"snapback";
-        if(result==="snapback"){
-          if(drag.image&&drag.image.isConnected){
-            drag.image.classList.remove("aca-dragging");
-            drag.image.style.transform=transformForSquare(drag.source);
-          }else board.position(game.fen(),false);
-        }
-        suppressNextBoardClick=true;window.setTimeout(()=>{suppressNextBoardClick=false;},0);
-      });
-      root.addEventListener("pointercancel",()=>{if(boardDragState){
-        const drag=boardDragState;boardDragState=null;
-        if(drag.image&&drag.image.isConnected){
-          drag.image.classList.remove("aca-dragging");
-          drag.image.style.transform=transformForSquare(drag.source);
-        }else board.position(game.fen(),false);
-      }});
-      window.addEventListener("resize",()=>board&&board.resize());board.position(START_FEN,false);
     }
 
 
@@ -3053,7 +2985,11 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
         try {
           const result = playMoveFromBoard(from, to, button.dataset.piece);
           if (result) clearBoardSelection();
-          else { pendingPromotion = null; closePromotionModal(); }
+          else {
+            pendingPromotion = null;
+            closePromotionModal();
+            if (board) board.position(game.fen(), false);
+          }
         } catch (_) {
           pendingPromotion = null;
           closePromotionModal();
