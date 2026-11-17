@@ -506,6 +506,9 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
 #board-wrap[data-board-theme="walnut"]{--aca-square-light:#f0dfc4;--aca-square-dark:#b68b64}
 #board-wrap[data-board-theme="slate"]{--aca-square-light:#e2e7e6;--aca-square-dark:#849da0}
 :root[data-motion="off"] #board.cg-wrap cg-board piece{transition:none!important}
+
+#takeback-btn{display:none!important}
+#undo-move-btn:disabled{opacity:.4}
 </style>
 </head>
 <body>
@@ -627,6 +630,8 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
               <button class="btn" id="prev-btn" disabled data-icon="chevron-left">Previous</button>
               <button class="btn" id="next-btn" disabled data-icon="chevron-right">Next</button>
               <button class="btn subtle" id="last-btn" title="Final position" disabled data-icon="chevrons-right">Last</button>
+              <button class="btn subtle" id="undo-move-btn" type="button" disabled data-icon="undo">Undo move</button>
+              <button class="btn subtle" id="reset-board-btn" type="button" data-icon="refresh">New game</button>
               <button class="btn subtle" id="flip-btn" data-icon="flip-horizontal">Flip board</button>
             </div>
             <div class="board-status" id="board-status">Select a piece to see its legal moves, or drag it to a square.</div>
@@ -1447,6 +1452,8 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
       $("prev-btn").disabled = currentIndex === 0;
       $("next-btn").disabled = currentIndex >= moves.length;
       $("last-btn").disabled = currentIndex >= moves.length;
+      const undoButton = $("undo-move-btn");
+      if (undoButton) undoButton.disabled = !moves.length || (playMode && (botThinking || currentIndex !== moves.length));
     }
 
     function formatEval(cp) {
@@ -2789,6 +2796,36 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
       updateAnalysisProgress(index, positions.length, `Analysing position ${index + 1} of ${positions.length} · depth ${analysisDepth}`);
     }
 
+    function undoBoardMove() {
+      if (document.documentElement.dataset.page === "puzzles") {
+        resetDailyPuzzle();
+        return;
+      }
+      if (playMode) {
+        takeBackBotTurn();
+        return;
+      }
+      if (currentIndex < moves.length) {
+        updatePosition(Math.max(0, currentIndex - 1));
+        return;
+      }
+      if (!moves.length) return;
+      const undone = game.undo();
+      if (!undone) return;
+      updateGameFromCurrent(false);
+      $("board-status").textContent = "Undid " + undone.san + ".";
+    }
+
+    function resetBoardGame() {
+      const page = document.documentElement.dataset.page;
+      if (page === "puzzles") {
+        resetDailyPuzzle();
+        return;
+      }
+      newGame();
+      if (page === "play") renderPageRoute();
+    }
+
     function openPromotionModal(from, to) {
       pendingPromotion = { from, to };
       $("promotion-modal").classList.add("open");
@@ -2950,6 +2987,8 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
       catch (error) { setImportMessage(`Example game could not be loaded: ${error.message}`, true); }
     });
     $("clear-btn").addEventListener("click", newGame);
+    $("undo-move-btn").addEventListener("click", undoBoardMove);
+    $("reset-board-btn").addEventListener("click", resetBoardGame);
     $("first-btn").addEventListener("click", () => updatePosition(0));
     $("prev-btn").addEventListener("click", () => updatePosition(currentIndex - 1));
     $("next-btn").addEventListener("click", () => updatePosition(currentIndex + 1));
