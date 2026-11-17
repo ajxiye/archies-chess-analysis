@@ -1373,7 +1373,7 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       }
     }
 
-    function requestBotMove() {
+    async function requestBotMove() {
       if (!playMode || !botProfile || game.isGameOver() || game.turn() === playerColor || botThinking) return;
       botThinking = true;
       $("turn-indicator").textContent = botProfile.name + " is thinking";
@@ -1381,11 +1381,19 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       const token = botToken;
       if (!botWorker) {
         try {
-          botWorker = makeEngineWorker();
+          const worker = await makeEngineWorker();
+          if (token !== botToken || !playMode) {
+            if (worker._blobUrl) URL.revokeObjectURL(worker._blobUrl);
+            worker.terminate();
+            return;
+          }
+          botWorker = worker;
+          $("engine-version").textContent = "Stockfish 19 · " + (worker._sourceLabel || "browser engine");
         } catch (error) {
+          if (token !== botToken) return;
           botThinking = false;
-          $("board-status").textContent = "Could not start the bot engine.";
-          setImportMessage("Bot engine error: " + error.message, true);
+          $("board-status").textContent = "The computer opponent could not start.";
+          setImportMessage("Stockfish download failed: " + error.message, true);
           return;
         }
 
@@ -2250,33 +2258,57 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       }
     }
 
-    function makeEngineWorker() {
-      const workerSource = `
-        const sources = ${JSON.stringify(ENGINE_SOURCES)};
-        const failures = [];
-        let loaded = false;
-        for (const source of sources) {
-          try {
-            self.Module = {};
-            self.Module.locateFile = function(path, prefix) {
-              if (source.wasm && path.endsWith(".wasm")) return new URL(path, source.base).href;
-              return prefix + path;
-            };
-            importScripts(source.base + source.file);
-            self.postMessage("aca:engine-source:" + source.label);
-            loaded = true;
-            break;
-          } catch (error) {
-            failures.push(source.label + ": " + (error && error.message ? error.message : String(error)));
+    const engineProgramCache = new Map();
+
+    async function makeEngineWorker() {
+      const failures = [];
+      for (const source of ENGINE_SOURCES) {
+        const scriptUrl = source.base + source.file;
+        try {
+          let programPromise = engineProgramCache.get(scriptUrl);
+          if (!programPromise) {
+            programPromise = fetch(scriptUrl, {
+              mode: "cors",
+              cache: "force-cache",
+              signal: AbortSignal.timeout(18000)
+            }).then(response => {
+              if (!response.ok) throw new Error("HTTP " + response.status);
+              return response.text();
+            }).then(program => {
+              if (!program || program.length < 5000 || !/Stockfish|stockfish|Module/.test(program)) {
+                throw new Error("The downloaded engine file was incomplete.");
+              }
+              return program;
+            });
+            engineProgramCache.set(scriptUrl, programPromise);
           }
+          const program = await programPromise;
+          const bootstrap = `
+            var Module = self.Module = {
+              locateFile: function(path) {
+                if (path.endsWith(".wasm")) return new URL(path, ${JSON.stringify(source.base)}).href;
+                return path;
+              }
+            };
+            self.postMessage("aca:engine-source:" + ${JSON.stringify(source.label)});
+          `;
+          const blob = new Blob([bootstrap, "\\n", program], { type: "text/javascript" });
+          const url = URL.createObjectURL(blob);
+          try {
+            const worker = new Worker(url);
+            worker._blobUrl = url;
+            worker._sourceLabel = source.label;
+            return worker;
+          } catch (error) {
+            URL.revokeObjectURL(url);
+            throw error;
+          }
+        } catch (error) {
+          engineProgramCache.delete(scriptUrl);
+          failures.push(source.label + ": " + (error && error.message ? error.message : String(error)));
         }
-        if (!loaded) self.postMessage("aca:engine-error:" + failures.join(" | "));
-      `;
-      const blob = new Blob([workerSource], { type: "text/javascript" });
-      const url = URL.createObjectURL(blob);
-      const worker = new Worker(url);
-      worker._blobUrl = url;
-      return worker;
+      }
+      throw new Error("Could not download the Stockfish program. " + failures.join(" | "));
     }
 
     function stopAnalysis(updateUi = true) {
@@ -2296,7 +2328,7 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       }
     }
 
-    function startAnalysis() {
+    async function startAnalysis() {
       if (!positions.length) return;
       stopAnalysis(false);
       const myToken = engineToken;
@@ -2319,12 +2351,19 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       updateCurrentEvaluation();
 
       try {
-        engineWorker = makeEngineWorker();
+        const worker = await makeEngineWorker();
+        if (myToken !== engineToken || !analysisRunning) {
+          if (worker._blobUrl) URL.revokeObjectURL(worker._blobUrl);
+          worker.terminate();
+          return;
+        }
+        engineWorker = worker;
+        $("engine-version").textContent = "Stockfish 19 · " + (worker._sourceLabel || "browser engine");
         engineWorker._startupTimer = window.setTimeout(() => {
           if (myToken !== engineToken || !analysisRunning || !engineWorker) return;
           stopAnalysis(false);
           updateAnalysisProgress(0, positions.length, "Engine did not respond");
-          setImportMessage("Stockfish did not respond while starting. Please reload the page and try again.", true);
+          setImportMessage("Stockfish did not respond while starting. Try again or reload the page.", true);
         }, 30000);
       } catch (error) {
         analysisRunning = false;
