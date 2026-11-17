@@ -185,6 +185,21 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
 .board-guide::before{content:"";display:inline-block;width:6px;height:6px;flex:0 0 auto;border-radius:50%;background:var(--accent)}
 @media(max-width:780px){.home-card-library{min-height:138px}}
 
+
+/* Move-quality labels and smoother piece motion */
+.aca-piece{transition:transform 205ms cubic-bezier(.22,.72,.23,1),opacity 130ms ease;will-change:transform}
+.aca-piece.aca-dragging{transition:none!important}
+.review-grade-summary{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.review-grade-pill{display:inline-flex;align-items:center;padding:4px 8px;border:1px solid var(--border);border-radius:999px;background:var(--panel-2);font-size:10px;font-weight:600}
+.grade-brilliant{color:#66cfc1!important;border-color:rgba(102,207,193,.28)!important}
+.grade-great{color:#83b9ed!important;border-color:rgba(131,185,237,.28)!important}
+.grade-best{color:#9dc77c!important}
+.grade-excellent{color:#85b8dc!important}
+.grade-good{color:var(--text)!important}
+.grade-inaccuracy{color:#d8bd72!important}
+.grade-mistake{color:#e39a69!important}
+.grade-blunder{color:#e17d78!important}
+.move-cell .grade{font-size:10px;font-weight:600}
 </style>
 </head>
 <body>
@@ -610,8 +625,12 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
     window.ACAIcons=mountIcons;
 
     const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    const ENGINE_BASE = "https://cdn.jsdelivr.net/npm/stockfish@19.0.1/";
-    const ENGINE_SCRIPT = ENGINE_BASE + "stockfish-19-lite-single.js";
+    const ENGINE_SOURCES = [
+      { label: "jsDelivr", base: "https://cdn.jsdelivr.net/npm/stockfish@19.0.1/", file: "stockfish-19-lite-single.js", wasm: true },
+      { label: "unpkg", base: "https://unpkg.com/stockfish@19.0.1/", file: "stockfish-19-lite-single.js", wasm: true },
+      { label: "jsDelivr mirror", base: "https://fastly.jsdelivr.net/npm/stockfish@19.0.1/", file: "stockfish-19-lite-single.js", wasm: true },
+      { label: "ASM-JS fallback", base: "https://cdn.jsdelivr.net/npm/stockfish@19.0.1/", file: "stockfish-19-asm.js", wasm: false }
+    ];
     const PIECE_THEME = "https://raw.githubusercontent.com/lichess-org/lila/master/public/piece/cburnett/{piece}.svg";
     const TACTICAL_PUZZLES = [
   {
@@ -795,10 +814,12 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
     let suppressNextBoardClick = false;
     let engineWorker = null;
     let analysisScores = [];
+    let analysisAlternativeScores = [];
     let analysisBestMoves = [];
     let analysisRunning = false;
     let analysisPosition = 0;
     let latestScore = null;
+    let latestAlternativeScore = null;
     let analysisDepth = 10;
     let engineToken = 0;
 
@@ -943,6 +964,7 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       pendingPromotion = null;
       closePromotionModal();
       analysisScores = [];
+      analysisAlternativeScores = [];
       const headers = parsed.getHeaders();
       renderAll(headers);
       importPanelOpen = false;
@@ -973,6 +995,7 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       currentIndex = 0;
       game = new Chess();
       analysisScores = [];
+      analysisAlternativeScores = [];
       pendingPromotion = null;
       closePromotionModal();
       $("pgn-input").value = "";
@@ -990,6 +1013,7 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       positions = [startFen, ...moves.map(move => move.after)];
       currentIndex = moves.length;
       analysisScores = [];
+      analysisAlternativeScores = [];
       analysisBestMoves = [];
       stopAnalysis(false);
       renderAll(playMode ? botGameHeaders() : {}, animateBoard);
@@ -1101,8 +1125,9 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
               const info = getMoveReview(moveIndex);
               if (info) {
                 const grade = document.createElement("span");
-                grade.className = "grade";
-                grade.textContent = `${Math.round(info.accuracy)}%`;
+                grade.className = "grade grade-" + info.grade.toLowerCase();
+                grade.textContent = info.grade;
+                grade.title = `${Math.round(info.accuracy)}% accuracy · ${Math.round(info.lossCp)} cp evaluation loss`;
                 button.append(grade);
               }
             }
@@ -1158,20 +1183,45 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       $("engine-status").textContent = message;
     }
 
+    const MATERIAL_VALUES = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 };
+
+    function materialBalance(fen, color) {
+      const placement = String(fen || "").split(/\\s+/)[0] || "";
+      let balance = 0;
+      for (const piece of placement) {
+        const value = MATERIAL_VALUES[piece.toLowerCase()];
+        if (value == null) continue;
+        balance += (piece === piece.toUpperCase() ? 1 : -1) * value * (color === "w" ? 1 : -1);
+      }
+      return balance;
+    }
+
     function getMoveReview(index) {
       if (analysisScores.length !== positions.length) return null;
       const before = analysisScores[index];
       const after = analysisScores[index + 1];
       if (before == null || after == null) return null;
-      const mover = moves[index].color;
+      const move = moves[index];
+      const mover = move.color;
+      const sideFactor = mover === "w" ? 1 : -1;
       const lossCp = Math.max(0, mover === "w" ? before - after : after - before);
       const accuracy = Math.max(0, Math.min(100, 100 * Math.exp(-0.8 * (lossCp / 100))));
-      let grade = "Best";
+      const playedUci = move.from + move.to + (move.promotion || "");
+      const isBest = Boolean(analysisBestMoves[index] && analysisBestMoves[index] === playedUci);
+      const bestLine = before * sideFactor;
+      const secondLine = analysisAlternativeScores[index] == null
+        ? null : analysisAlternativeScores[index] * sideFactor;
+      const onlyGoodMove = secondLine != null && bestLine - secondLine >= 85;
+      const materialSacrifice = materialBalance(move.before, mover) - materialBalance(move.after, mover) >= 250;
+      let grade = "Good";
       if (lossCp > 250) grade = "Blunder";
       else if (lossCp > 100) grade = "Mistake";
       else if (lossCp > 50) grade = "Inaccuracy";
-      else if (lossCp > 20) grade = "Good";
-      return { lossCp, accuracy, grade };
+      else if (isBest && materialSacrifice && onlyGoodMove && lossCp <= 35) grade = "Brilliant";
+      else if (isBest && onlyGoodMove && lossCp <= 35) grade = "Great";
+      else if (isBest && lossCp <= 35) grade = "Best";
+      else if (lossCp <= 15) grade = "Excellent";
+      return { lossCp, accuracy, grade, isBest, onlyGoodMove, materialSacrifice };
     }
 
     function estimateRating(accuracy) {
@@ -1184,6 +1234,21 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       if (analysisScores.length !== positions.length || !moves.length) {
         wrap.innerHTML = `<div class="empty-state">${moves.length ? "Run Stockfish analysis to generate the move review." : "Load a game to see its move-by-move review."}</div>`;
         return;
+      }
+      const gradeOrder = ["Brilliant", "Great", "Best", "Excellent", "Good", "Inaccuracy", "Mistake", "Blunder"];
+      const gradeCounts = Object.fromEntries(gradeOrder.map(grade => [grade, 0]));
+      for (let i = 0; i < moves.length; i++) {
+        const review = getMoveReview(i);
+        if (review) gradeCounts[review.grade] = (gradeCounts[review.grade] || 0) + 1;
+      }
+      const summary = document.createElement("div");
+      summary.className = "review-grade-summary";
+      for (const grade of gradeOrder) {
+        if (!gradeCounts[grade]) continue;
+        const pill = document.createElement("span");
+        pill.className = "review-grade-pill grade-" + grade.toLowerCase();
+        pill.textContent = grade + " " + gradeCounts[grade];
+        summary.append(pill);
       }
       const table = document.createElement("table");
       table.innerHTML = '<thead><tr><th>Move</th><th>Side</th><th>Played</th><th>Loss</th><th>Accuracy</th><th>Review</th></tr></thead>';
@@ -1212,7 +1277,7 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
         tbody.append(tr);
       }
       table.append(tbody);
-      wrap.replaceChildren(table);
+      wrap.replaceChildren(summary, table);
     }
 
     function renderPlayerStats() {
@@ -1289,6 +1354,7 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       currentIndex = 0;
       game = new Chess();
       analysisScores = [];
+      analysisAlternativeScores = [];
       pendingPromotion = null;
       closePromotionModal();
       $("pgn-input").value = "";
@@ -2151,6 +2217,7 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       currentIndex = moves.length;
       game = getPositionAt(currentIndex);
       analysisScores = [];
+      analysisAlternativeScores = [];
       renderAll(botGameHeaders());
       addBotChat("You", "I'd like to take that turn back.", true);
       if (game.isGameOver()) {
@@ -2174,13 +2241,25 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
 
     function makeEngineWorker() {
       const workerSource = `
-        const engineBase = ${JSON.stringify(ENGINE_BASE)};
-        self.Module = self.Module || {};
-        self.Module.locateFile = function(path, prefix) {
-          if (path.endsWith('.wasm')) return new URL(path, engineBase).href;
-          return prefix + path;
-        };
-        importScripts(${JSON.stringify(ENGINE_SCRIPT)});
+        const sources = ${JSON.stringify(ENGINE_SOURCES)};
+        const failures = [];
+        let loaded = false;
+        for (const source of sources) {
+          try {
+            self.Module = {};
+            self.Module.locateFile = function(path, prefix) {
+              if (source.wasm && path.endsWith(".wasm")) return new URL(path, source.base).href;
+              return prefix + path;
+            };
+            importScripts(source.base + source.file);
+            self.postMessage("aca:engine-source:" + source.label);
+            loaded = true;
+            break;
+          } catch (error) {
+            failures.push(source.label + ": " + (error && error.message ? error.message : String(error)));
+          }
+        }
+        if (!loaded) self.postMessage("aca:engine-error:" + failures.join(" | "));
       `;
       const blob = new Blob([workerSource], { type: "text/javascript" });
       const url = URL.createObjectURL(blob);
@@ -2192,6 +2271,8 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
     function stopAnalysis(updateUi = true) {
       engineToken++;
       if (engineWorker) {
+        if (engineWorker._startupTimer) window.clearTimeout(engineWorker._startupTimer);
+        if (engineWorker._blobUrl) URL.revokeObjectURL(engineWorker._blobUrl);
         engineWorker.terminate();
         engineWorker = null;
       }
@@ -2210,6 +2291,7 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       const myToken = engineToken;
       analysisDepth = Number($("depth-select").value) || 10;
       analysisScores = Array(positions.length).fill(null);
+      analysisAlternativeScores = Array(positions.length).fill(null);
       analysisBestMoves = Array(positions.length).fill(null);
       analysisRunning = true;
       analysisPosition = 0;
@@ -2227,6 +2309,12 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
 
       try {
         engineWorker = makeEngineWorker();
+        engineWorker._startupTimer = window.setTimeout(() => {
+          if (myToken !== engineToken || !analysisRunning || !engineWorker) return;
+          stopAnalysis(false);
+          updateAnalysisProgress(0, positions.length, "Engine did not respond");
+          setImportMessage("Stockfish did not respond while starting. Please reload the page and try again.", true);
+        }, 30000);
       } catch (error) {
         analysisRunning = false;
         $("analyse-btn").disabled = false;
@@ -2237,26 +2325,35 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       }
 
       engineWorker.onerror = (event) => {
-        if (engineWorker && engineWorker._blobUrl) {
-          URL.revokeObjectURL(engineWorker._blobUrl);
-          delete engineWorker._blobUrl;
-        }
         if (myToken !== engineToken) return;
+        const detail = [event.message, event.filename, event.lineno ? "line " + event.lineno : ""].filter(Boolean).join(" · ");
         stopAnalysis(false);
         updateAnalysisProgress(0, positions.length, "Engine failed to load");
-        setImportMessage(`Stockfish failed to load. Check your internet connection and try again. ${event.message || ""}`, true);
+        setImportMessage("Stockfish could not start. The browser could not load the engine files. " + (detail || "Try reloading the page or switching networks."), true);
       };
 
       engineWorker.onmessage = (event) => {
-        if (engineWorker && engineWorker._blobUrl) {
-          URL.revokeObjectURL(engineWorker._blobUrl);
-          delete engineWorker._blobUrl;
-        }
         if (myToken !== engineToken || !analysisRunning) return;
         const line = String(event.data || "").trim();
+        if (line.startsWith("aca:engine-source:")) {
+          $("engine-version").textContent = "Stockfish 19 · " + line.slice("aca:engine-source:".length);
+          return;
+        }
+        if (line.startsWith("aca:engine-error:")) {
+          const detail = line.slice("aca:engine-error:".length);
+          stopAnalysis(false);
+          updateAnalysisProgress(0, positions.length, "Engine download failed");
+          setImportMessage("Stockfish could not load from the available sources. " + detail, true);
+          return;
+        }
         if (line === "uciok") {
+          if (engineWorker._startupTimer) {
+            window.clearTimeout(engineWorker._startupTimer);
+            delete engineWorker._startupTimer;
+          }
           engineWorker.postMessage("setoption name Threads value 1");
           engineWorker.postMessage("setoption name Hash value 64");
+          engineWorker.postMessage("setoption name MultiPV value 2");
           engineWorker.postMessage("isready");
           return;
         }
@@ -2273,12 +2370,15 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
               score = sign * (10000 - Math.min(999, Math.abs(score)) * 10);
             }
             const sideToMove = positions[analysisPosition].split(/\s+/)[1] === "w" ? 1 : -1;
-            latestScore = score * sideToMove; // Stockfish reports from the side-to-move perspective.
+            const multipv = Number((line.match(/\bmultipv\s+(\d+)/) || [])[1] || 1);
+            if (multipv === 1) latestScore = score * sideToMove;
+            else if (multipv === 2) latestAlternativeScore = score * sideToMove;
           }
           return;
         }
         if (line.startsWith("bestmove")) {
           analysisScores[analysisPosition] = latestScore ?? 0;
+          analysisAlternativeScores[analysisPosition] = latestAlternativeScore;
           const bestUci = line.split(/\s+/)[1];
           analysisBestMoves[analysisPosition] = bestUci && bestUci !== "(none)" && bestUci !== "0000" ? bestUci : null;
           const complete = analysisPosition + 1;
@@ -2304,6 +2404,7 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
       if (token !== engineToken || !engineWorker) return;
       analysisPosition = index;
       latestScore = null;
+      latestAlternativeScore = null;
       analysisBestMoves[index] = null;
       engineWorker.postMessage(`position fen ${positions[index]}`);
       engineWorker.postMessage(`go depth ${analysisDepth}`);
@@ -2565,10 +2666,21 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
         const found=document.elementFromPoint(event.clientX,event.clientY),target=found&&found.closest?found.closest(".square-55d63"):null;
         const destination=target&&root.contains(target)?target.dataset.square:"";
         const result=destination?tryBoardMove(drag.source,destination,drag.pieceCode):"snapback";
-        if(result==="snapback")board.position(game.fen(),false);
+        if(result==="snapback"){
+          if(drag.image&&drag.image.isConnected){
+            drag.image.classList.remove("aca-dragging");
+            drag.image.style.transform=transformForSquare(drag.source);
+          }else board.position(game.fen(),false);
+        }
         suppressNextBoardClick=true;window.setTimeout(()=>{suppressNextBoardClick=false;},0);
       });
-      root.addEventListener("pointercancel",()=>{if(boardDragState){boardDragState=null;board.position(game.fen(),false);}});
+      root.addEventListener("pointercancel",()=>{if(boardDragState){
+        const drag=boardDragState;boardDragState=null;
+        if(drag.image&&drag.image.isConnected){
+          drag.image.classList.remove("aca-dragging");
+          drag.image.style.transform=transformForSquare(drag.source);
+        }else board.position(game.fen(),false);
+      }});
       window.addEventListener("resize",()=>board&&board.resize());board.position(START_FEN,false);
     }
 
