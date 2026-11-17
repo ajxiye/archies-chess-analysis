@@ -764,7 +764,7 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
     <section class="panel import-panel" id="review-import" role="dialog" aria-modal="true" aria-labelledby="import-dialog-title" hidden>
       <div class="panel-head">
         <div class="panel-title"><span class="eyebrow">IMPORT A GAME</span><h2 id="import-dialog-title">Open a chess game</h2></div>
-        <span class="eyebrow">PGN</span>
+        <button class="btn subtle" id="close-import-btn" type="button" aria-label="Close import panel" data-icon="x">Close</button>
       </div>
       <div class="panel-body import-layout">
         <div>
@@ -787,7 +787,7 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
     <section class="panel review-panel" id="review-panel" role="dialog" aria-modal="true" aria-labelledby="review-dialog-title" hidden>
       <div class="panel-head">
         <div class="panel-title"><span class="eyebrow">PERFORMANCE REPORT</span><h2 id="review-dialog-title">Move-by-move review</h2></div>
-        <span class="eyebrow">Brilliant · Great · Best · Mistakes</span>
+        <button class="btn subtle" id="close-review-btn" type="button" aria-label="Close full review" data-icon="x">Close</button>
       </div>
       <div class="panel-body">
         <div class="review-table-wrap" id="review-wrap"><div class="empty-state">Run Stockfish analysis to generate the move review.</div></div>
@@ -2499,57 +2499,75 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
       }
     }
 
-    const engineProgramCache = new Map();
+    const engineBundleCache = new Map();
 
     async function makeEngineWorker() {
       const failures = [];
       for (const source of ENGINE_SOURCES) {
         const scriptUrl = source.base + source.file;
+        const wasmUrl = source.wasm ? source.base + "stockfish-19-lite-single.wasm" : "";
         try {
-          let programPromise = engineProgramCache.get(scriptUrl);
-          if (!programPromise) {
-            programPromise = fetch(scriptUrl, {
-              mode: "cors",
-              cache: "force-cache",
-              signal: AbortSignal.timeout(18000)
-            }).then(response => {
-              if (!response.ok) throw new Error("HTTP " + response.status);
-              return response.text();
-            }).then(program => {
+          let bundlePromise = engineBundleCache.get(scriptUrl);
+          if (!bundlePromise) {
+            bundlePromise = Promise.all([
+              fetch(scriptUrl, {
+                mode: "cors",
+                cache: "force-cache",
+                signal: AbortSignal.timeout(25000)
+              }).then(response => {
+                if (!response.ok) throw new Error("engine JS HTTP " + response.status);
+                return response.text();
+              }),
+              source.wasm ? fetch(wasmUrl, {
+                mode: "cors",
+                cache: "force-cache",
+                signal: AbortSignal.timeout(25000)
+              }).then(response => {
+                if (!response.ok) throw new Error("engine WASM HTTP " + response.status);
+                return response.arrayBuffer();
+              }) : Promise.resolve(null)
+            ]).then(([program, wasmBytes]) => {
               if (!program || program.length < 5000 || !/Stockfish|stockfish|Module/.test(program)) {
-                throw new Error("The downloaded engine file was incomplete.");
+                throw new Error("The downloaded engine JavaScript was incomplete.");
               }
-              return program;
+              if (source.wasm && (!wasmBytes || wasmBytes.byteLength < 100000)) {
+                throw new Error("The downloaded WASM engine was incomplete.");
+              }
+              const wasmObjectUrl = wasmBytes
+                ? URL.createObjectURL(new Blob([wasmBytes], { type: "application/wasm" }))
+                : "";
+              return { program, wasmObjectUrl };
             });
-            engineProgramCache.set(scriptUrl, programPromise);
+            engineBundleCache.set(scriptUrl, bundlePromise);
           }
-          const program = await programPromise;
+          const bundle = await bundlePromise;
           const bootstrap = `
             var Module = self.Module = {
               locateFile: function(path) {
-                if (path.endsWith(".wasm")) return new URL(path, ${JSON.stringify(source.base)}).href;
+                if (path.endsWith(".wasm")) return ${JSON.stringify(bundle.wasmObjectUrl)};
                 return path;
               }
             };
             self.postMessage("aca:engine-source:" + ${JSON.stringify(source.label)});
           `;
-          const blob = new Blob([bootstrap, "\\n", program], { type: "text/javascript" });
+          const blob = new Blob([bootstrap, "\\n", bundle.program], { type: "text/javascript" });
           const url = URL.createObjectURL(blob);
           try {
             const worker = new Worker(url);
             worker._blobUrl = url;
             worker._sourceLabel = source.label;
+            worker._wasmObjectUrl = bundle.wasmObjectUrl;
             return worker;
           } catch (error) {
             URL.revokeObjectURL(url);
             throw error;
           }
         } catch (error) {
-          engineProgramCache.delete(scriptUrl);
+          engineBundleCache.delete(scriptUrl);
           failures.push(source.label + ": " + (error && error.message ? error.message : String(error)));
         }
       }
-      throw new Error("Could not download the Stockfish program. " + failures.join(" | "));
+      throw new Error("Could not download the Stockfish engine and its WASM file. " + failures.join(" | "));
     }
 
     function stopAnalysis(updateUi = true) {
@@ -2996,6 +3014,22 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
       if (!board) return;
       boardFlipped = !boardFlipped;
       board.orientation(boardFlipped ? "black" : "white");
+    });
+    $("close-import-btn").addEventListener("click", () => {
+      importPanelOpen = false;
+      renderPageRoute();
+    });
+    $("close-review-btn").addEventListener("click", () => {
+      reviewPanelOpen = false;
+      renderPageRoute();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key !== "Escape") return;
+      if (importPanelOpen || reviewPanelOpen) {
+        importPanelOpen = false;
+        reviewPanelOpen = false;
+        renderPageRoute();
+      }
     });
     $("analyse-btn").addEventListener("click", startAnalysis);
     $("stop-btn").addEventListener("click", () => stopAnalysis(true));
