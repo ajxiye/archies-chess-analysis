@@ -1400,6 +1400,17 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
         botWorker.onmessage = (event) => {
           if (token !== botToken || !playMode || !botProfile) return;
           const line = String(event.data || "").trim();
+          if (line.startsWith("aca:engine-source:")) {
+            $("engine-version").textContent = "Stockfish 19 · " + line.slice("aca:engine-source:".length);
+            return;
+          }
+          if (line.startsWith("aca:engine-error:")) {
+            const detail = line.slice("aca:engine-error:".length);
+            stopBotWorker();
+            $("board-status").textContent = "The bot engine could not be loaded. Please reload and try again.";
+            setImportMessage("Stockfish could not load from the available sources. " + detail, true);
+            return;
+          }
           if (line === "uciok") {
             botWorker.postMessage("setoption name Threads value 1");
             botWorker.postMessage("setoption name Hash value 32");
