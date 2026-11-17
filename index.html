@@ -2904,6 +2904,7 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
           color: chessgroundColor(game.turn()),
           dests: legalDestinations(game),
           showDests: true,
+          rookCastle: false,
           events: { after: handleChessgroundMove }
         },
         premovable: { enabled: false },
