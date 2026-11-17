@@ -2634,8 +2634,12 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
         analysisRunning = false;
         $("analyse-btn").disabled = false;
         $("stop-btn").disabled = true;
-        updateAnalysisProgress(0, positions.length, "Could not create engine worker");
-        setImportMessage(`Engine error: ${error.message}`, true);
+        $("engine-version").textContent = "ENGINE OFFLINE";
+        const detail = String(error && error.message ? error.message : error);
+        $("engine-status").textContent = "Download failed · " + detail.slice(0, 72);
+        $("engine-status").title = detail;
+        updateAnalysisProgress(0, positions.length, "Engine download failed");
+        setImportMessage("Stockfish could not be downloaded. " + detail, true);
         return;
       }
 
@@ -2643,8 +2647,11 @@ textarea{display:block;width:100%;min-height:150px;resize:vertical;font:11px/1.5
         if (myToken !== engineToken) return;
         const detail = [event.message, event.filename, event.lineno ? "line " + event.lineno : ""].filter(Boolean).join(" · ");
         stopAnalysis(false);
-        updateAnalysisProgress(0, positions.length, "Engine failed to load");
-        setImportMessage("Stockfish could not start. The browser could not load the engine files. " + (detail || "Try reloading the page or switching networks."), true);
+        $("engine-version").textContent = "ENGINE OFFLINE";
+        $("engine-status").textContent = "Engine runtime error · " + (detail || "Worker could not start");
+        $("engine-status").title = detail || "Worker could not start";
+        updateAnalysisProgress(0, positions.length, "Engine failed to start");
+        setImportMessage("Stockfish could not start. " + (detail || "Try reloading the page or switching networks."), true);
       };
 
       engineWorker.onmessage = (event) => {
