@@ -30,8 +30,10 @@ separate program and keeps its own licence.
 - Licence: GNU General Public License, version 2 or later (GPL-2.0+)
 - Upstream attribution: https://github.com/lichess-org/lila/blob/master/COPYING.md
 
-The app loads the SVG pieces from the Lichess source repository. The artwork
-retains its own licence and is separate from the MIT-licensed application code.
+The app uses the Cburnett piece artwork embedded as data URIs in
+Chessground's `chessground.cburnett.css` asset. The artwork retains its own
+licence; the stylesheet is distributed with Chessground and covered by its
+GPL-3.0-or-later package licence.
 
 The app loads chess.js and the Cburnett SVG artwork from public CDNs when the
 page opens. The Stockfish engine is also downloaded for browser analysis. An
