@@ -1186,7 +1186,7 @@ body{font-size:14px;line-height:1.45;color:#d0d2ce}
     const MATERIAL_VALUES = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 };
 
     function materialBalance(fen, color) {
-      const placement = String(fen || "").split(/\\s+/)[0] || "";
+      const placement = String(fen || "").split(/\s+/)[0] || "";
       let balance = 0;
       for (const piece of placement) {
         const value = MATERIAL_VALUES[piece.toLowerCase()];
