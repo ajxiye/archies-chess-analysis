@@ -35,7 +35,7 @@ Chessground's `chessground.cburnett.css` asset. The artwork retains its own
 licence; the stylesheet is distributed with Chessground and covered by its
 GPL-3.0-or-later package licence.
 
-The app loads chess.js and the Cburnett SVG artwork from public CDNs when the
+The app loads chess.js, Chessground and its CSS assets from public CDNs when the
 page opens. The Stockfish engine is also downloaded for browser analysis. An
 internet connection is required for these external assets and engine files.
 
